@@ -2,6 +2,7 @@
 #define SRC_MAIN_WINDOW_H 1
 
 #include <gtkmm.h>
+#include "draw.h"
 
 class MainWindow : public Gtk::Window
 {
@@ -11,14 +12,13 @@ public:
 
 protected:
   //signal handlers:
-  bool on_drawingarea_draw(const Cairo::RefPtr<Cairo::Context>& cr);
 
   //Member widgets:
   Gtk::Frame m_BallFrame;
   Gtk::Box m_VBox;
-  Gtk::DrawingArea m_BallArea;
+  BallDrawingArea m_BallArea;
 
-  Cairo::RefPtr<Cairo::Surface> m_surface;
+  //Cairo::RefPtr<Cairo::Surface> m_surface;
 };
 
 
