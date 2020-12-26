@@ -197,3 +197,397 @@ void Ball::draw(const Cairo::RefPtr<Cairo::Context>& cr,
 	cr->restore();  // back to opaque black
 	cr->stroke();
 }
+
+void Ball::findPolygonalObstaclePathIntersection(PolygonalObstacle* polyObs, Event* ev) const
+{
+    int numberPoints = polyObs->points.size();
+    Event* cornersAndEdges = reinterpret_cast<Event*>(calloc(numberPoints*2, sizeof(Event)));
+    int k;
+
+    for (k = 0; k < numberPoints; k++)
+    {
+        int i = k;
+        int j = (k == numberPoints - 1) ? 0 : k+1;
+        Vector2D P1, P2, P1P2, v;
+        number t;
+
+        /* check for path intersection with corner k */
+        cornersAndEdges[k].type = EventType::POLYGONAL_OBSTACLE_COLLISION;
+        cornersAndEdges[k].polyObstacle = polyObs;
+        cornersAndEdges[k].polyObsCollType = k;
+        cornersAndEdges[k].ball = this;
+        cornersAndEdges[k].ball2 = NULL;
+        cornersAndEdges[k].obstacle = NULL;
+        /* do not re-collide with same obstacle corner with no event in
+           between! */
+        if (this->lastEvent.type == EventType::POLYGONAL_OBSTACLE_COLLISION &&
+            this->lastEvent.polyObsCollType == k)
+            cornersAndEdges[k].delta_t = INFINITY;
+        else
+            cornersAndEdges[k].delta_t =
+                findPathPointIntersection(polyObs->points[k].x,
+                                          polyObs->points[k].y);
+
+        /* check for path intersection with edge (i,j) */
+        P1 = polyObs->points[i];
+        P2 = polyObs->points[j];
+        
+        cornersAndEdges[numberPoints + k].type = EventType::POLYGONAL_OBSTACLE_COLLISION;
+        cornersAndEdges[numberPoints + k].polyObstacle = polyObs;
+        cornersAndEdges[numberPoints + k].polyObsCollType = numberPoints + k;
+        cornersAndEdges[numberPoints + k].ball = this;
+        cornersAndEdges[numberPoints + k].ball2 = NULL;
+        cornersAndEdges[numberPoints + k].obstacle = NULL;
+
+        /* do not re-collide with same obstacle edge with no event in
+           between! */
+        if (this->lastEvent.type == EventType::POLYGONAL_OBSTACLE_COLLISION &&
+            this->lastEvent.polyObsCollType == numberPoints + k)
+        {
+            cornersAndEdges[numberPoints + k].delta_t = INFINITY;
+            continue;
+        }
+
+        /* 
+           1. is b moving *towards* edge (i,j)?
+           solve([bx+vx*t = p1x + u*(p2x-p1x), 
+                  by+vy*t = p1y + u*(p2y-p1y)], [t,u]); 
+        */
+        t = -(this->x*(P2.y-P1.y)+P1.x*(this->y-P2.y)+(P1.y-this->y)*P2.x)/
+            (this->dy*(-P2.x+P1.x) + (P2.y-P1.y)*this->dx);
+        if (t < 0.0) /* the ball is moving away from edge (i,j) */
+        {
+            cornersAndEdges[numberPoints + k].delta_t = INFINITY;
+        }
+        else /* the ball is moving towards edge (i,j) */
+        {
+            Vector2D yAxis, b;
+            number cos_alpha, alpha;
+
+            P1P2 = Vector2D_sub(&P2, &P1);
+            v.x = this->dx;
+            v.y = this->dy;
+
+            b.x = this->x;
+            b.y = this->y;
+
+            if (P1P2.y < 0.0)
+            {
+                yAxis.x = 0.0;
+                yAxis.y = -1.0;
+                cos_alpha = Vector2D_scalarProduct(&P1P2, &yAxis)/Vector2D_length(&P1P2);
+                alpha = acos(cos_alpha)/M_PI * 180.0;
+                if (P1P2.x >= 0.0)
+                { /* Quadrant I */
+                    Vector2D_rotate(&v, alpha, false);
+                    Vector2D_rotate(&P1P2, alpha, false);
+                    Vector2D_rotateAroundPoint(&b, &P1, alpha, false);
+                    /* recompute P2 based on rotated P1P2 */
+                    P2.x = P1.x + P1P2.x;
+                    P2.y = P1.y + P1P2.y;
+                    
+                    if (b.x > P2.x)
+                        cornersAndEdges[numberPoints + k].delta_t = (P2.x + this->radius - b.x)/(v.x * this->velocity);
+                    else
+                        cornersAndEdges[numberPoints + k].delta_t = (P2.x - this->radius - b.x)/(v.x * this->velocity);
+                    if (cornersAndEdges[numberPoints + k].delta_t < 0)
+                        cornersAndEdges[numberPoints + k].delta_t = INFINITY;
+                    else
+                    {
+                        /* is the intersection outside of the extents of the edge? */
+                        number y = b.y + v.y * this->velocity * cornersAndEdges[numberPoints + k].delta_t;
+                        if (y < fmin(P1.y, P2.y) || y > fmax(P1.y, P2.y))
+                            cornersAndEdges[numberPoints + k].delta_t = INFINITY;
+                    }
+                }
+                else
+                { /* Quadrant II */
+                    Vector2D_rotate(&v, alpha, true);
+                    Vector2D_rotate(&P1P2, alpha, true);
+                    Vector2D_rotateAroundPoint(&b, &P1, alpha, true);
+
+                    /* recompute P2 based on rotated P1P2 */
+                    P2.x = P1.x + P1P2.x;
+                    P2.y = P1.y + P1P2.y;
+           
+                    if (b.x > P2.x)
+                        cornersAndEdges[numberPoints + k].delta_t = (P2.x + this->radius - b.x)/(v.x * this->velocity);
+                    else
+                        cornersAndEdges[numberPoints + k].delta_t = (P2.x - this->radius - b.x)/(v.x * this->velocity);
+                    if (cornersAndEdges[numberPoints + k].delta_t < 0)
+                        cornersAndEdges[numberPoints + k].delta_t = INFINITY;
+                    else
+                    {
+                        /* is the intersection outside of the extents of the edge? */
+                        number y = b.y + v.y * this->velocity * cornersAndEdges[numberPoints + k].delta_t;
+                        if (y < fmin(P1.y, P2.y) || y > fmax(P1.y, P2.y))
+                            cornersAndEdges[numberPoints + k].delta_t = INFINITY;
+                    }
+                }
+            }
+            else
+            {
+                yAxis.x = 0.0;
+                yAxis.y = 1.0;
+                cos_alpha = Vector2D_scalarProduct(&P1P2, &yAxis)/Vector2D_length(&P1P2);
+                alpha = acos(cos_alpha)/M_PI * 180.0;
+                if (P1P2.x >= 0.0)
+                { /* Quadrant IV */
+                    Vector2D_rotate(&v, alpha, true);
+                    Vector2D_rotate(&P1P2, alpha, true);
+                    Vector2D_rotateAroundPoint(&b, &P1, alpha, true);
+                    /* recompute P2 based on rotated P1P2 */
+                    P2.x = P1.x + P1P2.x;
+                    P2.y = P1.y + P1P2.y;
+                    
+                    if (b.x > P2.x)
+                        cornersAndEdges[numberPoints + k].delta_t = (P2.x + this->radius - b.x)/(v.x * this->velocity);
+                    else
+                        cornersAndEdges[numberPoints + k].delta_t = (P2.x - this->radius - b.x)/(v.x * this->velocity);
+                    if (cornersAndEdges[numberPoints + k].delta_t < 0)
+                        cornersAndEdges[numberPoints + k].delta_t = INFINITY;
+                    else
+                    {
+                        /* is the intersection outside of the extents of the edge? */
+                        number y = b.y + v.y * this->velocity * cornersAndEdges[numberPoints + k].delta_t;
+                        if (y < fmin(P1.y, P2.y) || y > fmax(P1.y, P2.y))
+                            cornersAndEdges[numberPoints + k].delta_t = INFINITY;
+                    }
+                }
+                else
+                { /* Quadrant III */
+                    Vector2D_rotate(&v, alpha, false);
+                    Vector2D_rotate(&P1P2, alpha, false);
+                    Vector2D_rotateAroundPoint(&b, &P1, alpha, false);
+
+                    /* recompute P2 based on rotated P1P2 */
+                    P2.x = P1.x + P1P2.x;
+                    P2.y = P1.y + P1P2.y;
+                    
+                    if (b.x > P2.x)
+                        cornersAndEdges[numberPoints + k].delta_t = (P2.x + this->radius - b.x)/(v.x * this->velocity);
+                    else
+                        cornersAndEdges[numberPoints + k].delta_t = (P2.x - this->radius - b.x)/(v.x * this->velocity);
+                    if (cornersAndEdges[numberPoints + k].delta_t < 0)
+                        cornersAndEdges[numberPoints + k].delta_t = INFINITY;
+                    else
+                    {
+                        /* is the intersection outside of the extents of the edge? */
+                        number y = b.y + v.y * this->velocity * cornersAndEdges[numberPoints + k].delta_t;
+                        if (y < fmin(P1.y, P2.y) || y > fmax(P1.y, P2.y))
+                            cornersAndEdges[numberPoints + k].delta_t = INFINITY;
+                    }
+                }
+            }
+        }
+    }
+        
+    *ev = Event::find_closest(cornersAndEdges, numberPoints*2);
+    free(cornersAndEdges);
+}
+
+void Ball::findWallIntersection(Event* ev) const
+{
+    Event walls[4];
+    number 
+        bx = this->x + EPS * this->dx, 
+        by = this->y + EPS * this->dy;
+
+    /* future collision with left wall?
+       (bx + this->dx*this->velocity*t = MINX + this->radius) */
+    walls[0].type = EventType::LEFT_WALL_HIT;
+    walls[0].ball = this;
+    walls[0].ball2 = nullptr;
+    walls[0].delta_t = (MINX - bx + this->radius)/(this->dx * this->velocity);
+    if (walls[0].delta_t < 0)
+        walls[0].delta_t = INFINITY;
+
+    /* future collision with right wall?
+       (bx + this->dx*this->velocity*t = MAXX - this->radius) */
+    walls[1].type = EventType::RIGHT_WALL_HIT;
+    walls[1].ball = this;
+    walls[1].ball2 = nullptr;
+    walls[1].delta_t = (MAXX - bx - this->radius)/(this->dx * this->velocity);
+    if (walls[1].delta_t < 0)
+        walls[1].delta_t = INFINITY;
+
+    /* future collision with top wall?
+       (by + this->dy*this->velocity*t = MINY + this->radius) */
+    walls[2].type = EventType::TOP_WALL_HIT;
+    walls[2].ball = this;
+    walls[2].ball2 = nullptr;
+    walls[2].delta_t = (MINY - by + this->radius)/(this->dy * this->velocity);
+    if (walls[2].delta_t < 0)
+        walls[2].delta_t = INFINITY;
+  
+    /* future collision with bottom wall?
+       (by + this->dy*this->velocity*t = MAXY - this->radius) */
+    walls[3].type = EventType::BOTTOM_WALL_HIT;
+    walls[3].ball = this;
+    walls[3].ball2 = nullptr;
+    walls[3].delta_t = (MAXY - by - this->radius)/(this->dy * this->velocity);
+    if (walls[3].delta_t < 0)
+        walls[3].delta_t = INFINITY;
+
+    /* 
+       qsort(walls, 4, sizeof(Event), event_comp);
+       *ev = walls[0]; 
+       */
+
+    *ev = Event::find_closest(walls, 4);
+}
+
+void Ball::findObstacleIntersection(Obstacle* ob, Event* ev) const
+{
+    int i;
+    Vector2D center;
+    Event obsColls[8];
+    number 
+        bx = this->x + EPS * this->dx, 
+        by = this->y + EPS * this->dy,
+        r = this->radius;
+    number x, y;
+    
+    for (i = 0; i < 8; i++)
+    {
+        obsColls[i].type = EventType::OBSTACLE_COLLISION;
+        obsColls[i].ball = this;
+        obsColls[i].ball2 = nullptr;
+        obsColls[i].obstacle = ob;
+    }
+
+    /* future collision with left edge? */
+    obsColls[0].obsCollType = ObstacleCollisionType::LEFT_EDGE;
+    obsColls[0].delta_t = (ob->x1 - r - bx)/(this->dx * this->velocity);
+    if (obsColls[0].delta_t < 0)
+        obsColls[0].delta_t = INFINITY;
+    else
+    {
+        /* is the intersection outside of the extents of the left edge? */
+        y = by + this->dy * this->velocity * obsColls[0].delta_t;
+        if (y < ob->y1 || y > ob->y2)
+            obsColls[0].delta_t = INFINITY;
+    }
+
+    /* future collision with right edge? */
+    obsColls[1].obsCollType = ObstacleCollisionType::RIGHT_EDGE;
+    obsColls[1].delta_t = (ob->x2 + r - bx)/(this->dx * this->velocity);
+    if (obsColls[1].delta_t < 0)
+        obsColls[1].delta_t = INFINITY;
+    else
+    {
+        /* is the intersection outside of the extents of the right edge? */
+        y = by + this->dy * this->velocity * obsColls[1].delta_t;
+        if (y < ob->y1 || y > ob->y2)
+            obsColls[1].delta_t = INFINITY;
+    }
+
+    /* future collision with top edge? */
+    obsColls[2].obsCollType = ObstacleCollisionType::TOP_EDGE;
+    obsColls[2].delta_t = (ob->y1 - r - by)/(this->dy * this->velocity);
+    if (obsColls[2].delta_t < 0)
+        obsColls[2].delta_t = INFINITY;
+    else
+    {
+        /* is the intersection outside of the extents of the top edge? */
+        x = bx + this->dx * this->velocity * obsColls[2].delta_t;
+        if (x < ob->x1 || x > ob->x2)
+            obsColls[2].delta_t =INFINITY;
+    }
+
+    /* future collision with bottom edge? */
+    obsColls[3].obsCollType = ObstacleCollisionType::BOTTOM_EDGE;
+    obsColls[3].delta_t = (ob->y2 + r - by)/(this->dy * this->velocity);
+    if (obsColls[3].delta_t < 0)
+        obsColls[3].delta_t = INFINITY;
+    else
+    {
+        /* is the intersection outside of the extents of the bottom edge? */
+        x = bx + this->dx * this->velocity * obsColls[3].delta_t;
+        if (x < ob->x1 || x > ob->x2)
+            obsColls[3].delta_t =INFINITY;
+    }
+
+    center.x = (ob->x1 + ob->x2)/2.0;
+    center.y = (ob->y1 + ob->y2)/2.0;
+
+    /* future intersection with top left corner? */
+    obsColls[4].obsCollType = ObstacleCollisionType::TOPLEFT_CORNER;
+    if (bx < center.x && by < center.y)
+        obsColls[4].delta_t = findPathPointIntersection(ob->x1, ob->y1);
+    else
+        obsColls[4].delta_t = INFINITY;
+    
+    /* future intersection with top right corner? */
+    obsColls[5].obsCollType = ObstacleCollisionType::TOPRIGHT_CORNER;
+    if (bx > center.x && by < center.y)
+        obsColls[5].delta_t = findPathPointIntersection(ob->x2, ob->y1);
+    else
+        obsColls[5].delta_t = INFINITY;
+
+    /* future intersection with bottom left corner? */
+    obsColls[6].obsCollType = ObstacleCollisionType::BOTTOMLEFT_CORNER;
+    if (bx < center.x && by > center.y)
+        obsColls[6].delta_t = findPathPointIntersection(ob->x1, ob->y2);
+    else
+        obsColls[6].delta_t = INFINITY;
+
+    /* future intersection with bottom right corner? */
+    obsColls[7].obsCollType = ObstacleCollisionType::BOTTOMRIGHT_CORNER;
+    if (bx > center.x && by > center.y)
+        obsColls[7].delta_t = findPathPointIntersection(ob->x2, ob->y2);
+    else
+        obsColls[7].delta_t = INFINITY;
+
+    /*
+      qsort(obsColls, 8, sizeof(Event), event_comp);
+      *ev = obsColls[0];
+      */
+    *ev = Event::find_closest(obsColls, 8);
+}
+
+number Ball::findPathIntersection(Ball* b1, Ball* b2)
+{
+    number 
+        px1 = b1->x + EPS*b1->dx, 
+        py1 = b1->y + EPS*b1->dy, 
+        px2 = b2->x + EPS*b2->dx, 
+        py2 = b2->y + EPS*b2->dy;
+    number vx1 = b1->dx*b1->velocity, vy1 = b1->dy*b1->velocity,
+        vx2 = b2->dx*b2->velocity, vy2 = b2->dy*b2->velocity;
+    number r1 = b1->radius, r2 = b2->radius;
+    number sqrtArg, sqrtValue;
+    number t1, t2;
+
+    sqrtArg = (pow2(r2)+2*r1*r2+pow2(r1)-pow2(px2)+2*px1*px2-pow2(px1))*pow2(vy2)+((-2*pow2(r2)-4*r1*r2-2*pow2(r1)+2*pow2(px2)-4*px1*px2+2*pow2(px1))*vy1+((2*px2-2*px1)*py2+(2*px1-2*px2)*py1)*vx2+((2*px1-2*px2)*py2+(2*px2-2*px1)*py1)*vx1)*vy2+(pow2(r2)+2*r1*r2+pow2(r1)-pow2(px2)+2*px1*px2-pow2(px1))*pow2(vy1)+(((2*px1-2*px2)*py2+(2*px2-2*px1)*py1)*vx2+((2*px2-2*px1)*py2+(2*px1-2*px2)*py1)*vx1)*vy1+(pow2(r2)+2*r1*r2+pow2(r1)-pow2(py2)+2*py1*py2-pow2(py1))*pow2(vx2)+(-2*pow2(r2)-4*r1*r2-2*pow2(r1)+2*pow2(py2)-4*py1*py2+2*pow2(py1))*vx1*vx2+(pow2(r2)+2*r1*r2+pow2(r1)-pow2(py2)+2*py1*py2-pow2(py1))*pow2(vx1);
+  
+    if (sqrtArg < 0)
+        return INFINITY;
+
+    sqrtValue = sqrt(sqrtArg);
+
+    t1 = -(sqrtValue +(py2-py1)*vy2+(py1-py2)*vy1+
+           (px2-px1)*vx2+(px1-px2)*vx1)/(pow2(vy2)-2*vy1*vy2+pow2(vy1)+pow2(vx2)-2*vx1*vx2+pow2(vx1));
+
+    t2 = (sqrtValue +(py1-py2)*vy2+(py2-py1)*vy1+
+          (px1-px2)*vx2+(px2-px1)*vx1)/(pow2(vy2)-2*vy1*vy2+pow2(vy1)+pow2(vx2)-2*vx1*vx2+pow2(vx1));
+
+    if (t1 < 0)
+        return (t2 < 0) ? INFINITY : t2;
+    else if (t2 < 0)
+        return t1;
+    else
+        return fmin(t1, t2);
+}
+
+bool Ball::collision_check(Ball* b1, Ball* b2)
+{
+    double r1pr2, dx, dy;
+    r1pr2 = b1->radius + b2->radius;
+    dx = b2->x - b1->x;
+    dy = b2->y - b1->y;
+    if (dx*dx + dy*dy <= r1pr2*r1pr2)
+        return true;
+    else
+        return false;
+}

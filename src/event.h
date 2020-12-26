@@ -2,6 +2,7 @@
 #define SRC_EVENT_H 1
 
 #include <vector>
+#include <ostream>
 
 #include "vector2d.h"
 #include "utils.h"
@@ -36,7 +37,11 @@ typedef struct
 class Event 
 {
 public:
+	Event() { }
+
 	static Event find_closest(Event* events, int count);
+	
+	void print(std::ostream& out) const;
 
 public:
     EventType type;
@@ -48,11 +53,17 @@ public:
     int polyObsCollType; 
     PolygonalObstacle* polyObstacle;
 
-    Ball* ball;
-    Ball* ball2;
+    const Ball* ball;
+    const Ball* ball2;
 
     number delta_t;
 };
+
+inline std::ostream& operator<<(std::ostream& out, const Event& event)
+{
+	event.print(out);
+	return out;
+}
 
 #endif /* SRC_EVENT_H */
 

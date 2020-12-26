@@ -8,8 +8,12 @@
 
 struct BallSimulation
 {
+public:
 	BallSimulation();
 	
+	bool collision_with_other(Ball* b);
+	
+public:
     long iteration_number;
     std::time_t startTime;
     std::time_t lastZombieTime;
