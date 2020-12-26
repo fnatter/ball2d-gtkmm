@@ -1,4 +1,5 @@
 #include <cmath>
+#include <iostream>
 
 #include "ball.h"
 
@@ -63,8 +64,6 @@ Ball::Ball()
     this->lastEvent.obstacle = nullptr;
     this->lastEvent.ball = nullptr;
     this->lastEvent.ball2 = nullptr;
-    
-    randomizePosition();
 }
 
 void Ball::randomizePosition()
@@ -74,6 +73,11 @@ void Ball::randomizePosition()
                                   MINY + this->radius, MAXY - this->radius);
     this->x = position.x;
     this->y = position.y;
+}
+
+void Ball::print(std::ostream& out) const
+{
+	out << "Ball@" << x << "," << y << ": r=" << radius;
 }
 
 number Ball::findPathPointIntersection(number cx, number cy) const
@@ -187,11 +191,17 @@ bool Ball::pointInside(number x, number y) const
 void Ball::draw(const Cairo::RefPtr<Cairo::Context>& cr,
 	const int width, const int height) const
 {
-	int sx = ((this->x - MINX) / (MAXX - MINX)) * width;
-	int sy = ((this->y - MINY) / (MAXY - MINY)) * height;
+	const int lesser = std::min(width, height);
+	int sx = (int)(((this->x - MINX) / (MAXX - MINX)) * (width-1) + 0.5);
+	int sy = (int)(((this->y - MINY) / (MAXY - MINY)) * (height-1) + 0.5);
+	int r = (int)(((this->radius)/(MAXX-MINX)) * (width-1) + 0.5);
+	
+	std::cout << "Ball::draw: width=" << width << ", height=" << height
+	          << ", sx=" << sx << ", sy=" << sy
+	          << ", r=" << r << std::endl;
 		
 	cr->save();
-	cr->arc(sx, sy, width / 6, 0.0, 2.0 * M_PI); // full circle
+	cr->arc(sx, sy, r, 0.0, 2.0 * M_PI); // full circle
 	cr->set_source_rgba(0.0, 0.0, 0.8, 0.6);    // partially translucent
 	cr->fill_preserve();
 	cr->restore();  // back to opaque black

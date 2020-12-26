@@ -31,19 +31,19 @@ void Event::print(std::ostream& out) const
     {
 		out << "ev.type=" << typeNames[as_integer(type)] << "::" << obsTypeNames[as_integer(obsCollType)]
 		    << ", ev.ball=" << std::hex << ball << std::dec
-		    << ", t=" << delta_t << std::endl;
+		    << ", t=" << delta_t;
     }
     else if (type == EventType::POLYGONAL_OBSTACLE_COLLISION)
     {
 		out << "ev.type=" << typeNames[as_integer(type)] << "::" << polyObsCollType
 		    << ", ev.ball=" << std::hex << ball << std::dec
-		    << ", t=" << delta_t << std::endl;
+		    << ", t=" << delta_t;
     }
     else
     {
 		out << "ev.type=" << typeNames[as_integer(type)]
 		    << ", ev.ball=" << std::hex << ball << std::dec
 		    << ", ev.ball2=" << std::hex << ball2 << std::dec
-		    << ", t=" << delta_t << std::endl;
+		    << ", t=" << delta_t;
     }
 }

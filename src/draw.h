@@ -7,14 +7,14 @@
 class BallDrawingArea : public Gtk::DrawingArea
 {
 public:
-	BallDrawingArea();
+	BallDrawingArea(const BallSimulation& sim);
 	~BallDrawingArea() { }
   
 protected:
 	//signal handlers:
 	bool on_drawingarea_draw(const Cairo::RefPtr<Cairo::Context>& cr);
   
-	BallSimulation m_sim;
+	const BallSimulation& m_sim;
 };
 
 #endif /* SRC_DRAW_H */

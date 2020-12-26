@@ -5,15 +5,71 @@
 BallSimulation::BallSimulation()
 {
 	max_radius = -100.0;
-	
 	unsigned int numberOfBalls = 20;
 	for (size_t i = 0; i < numberOfBalls; i++)
 	{
 		balls.push_back(Ball());
+		
+		if (balls[i].radius > max_radius)
+            max_radius = balls[i].radius;
+
 	}
 	
 	nextEvent.type = EventType::NONE;
 	nextEvent.delta_t = INFINITY;
+	
+	initRandomPosition();	
+}
+
+void BallSimulation::initRandomPosition()
+{
+    ObstacleCollisionType obsCollType;
+
+	for (size_t i = 0; i < balls.size(); i++)
+	{
+		int numberConflicts = 0;
+
+		bool conflict = true;
+		while (conflict)
+		{
+			balls[i].randomizePosition();
+			conflict = false;
+
+			/* check for collision with obstacle(s) */
+			for (size_t j = 0; j < obstacles.size(); j++)
+			{
+				if (balls[i].obstacle_collision_check(&obstacles[j], &obsCollType))
+				{
+					conflict = true;
+					break;
+				}
+			}
+			for (size_t j = 0; j <  polyObstacles.size(); j++)
+			{
+				if (balls[i].polygonalObstacle_collision_check(&polyObstacles[j]))
+				{
+					conflict = true;
+					break;
+				}
+			}
+
+			/* check for collision with other balls */
+			for (size_t j = 0; j < i; j++)
+			{
+				if (Ball::collision_check(&balls[i], &balls[j])) {
+					conflict = true;
+					break;
+				}
+			}
+			if (conflict && ++numberConflicts > 10000)
+			{
+				/* it is very likely that there's no space left for the
+				   i'th ball */
+				balls.resize(i-1);
+				break;
+			}
+		} // while(conflict)
+	} // for all balls
 }
 
 bool BallSimulation::collision_with_other(Ball* b)

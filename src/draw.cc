@@ -1,9 +1,12 @@
 #include "draw.h"
+#include <iostream>
  
-BallDrawingArea::BallDrawingArea()
+BallDrawingArea::BallDrawingArea(const BallSimulation& sim)
+	: m_sim(sim)
 {
 	signal_draw().connect(
       sigc::mem_fun(*this, &BallDrawingArea::on_drawingarea_draw));
+
 }
 
 bool BallDrawingArea::on_drawingarea_draw(const Cairo::RefPtr<Cairo::Context>& cr)
@@ -20,11 +23,12 @@ bool BallDrawingArea::on_drawingarea_draw(const Cairo::RefPtr<Cairo::Context>& c
 	const int xc = width / 2;
 	const int yc = height / 2;
 
-	cr->set_line_width(lesser * 0.02);  // outline thickness changes
+	cr->set_line_width(lesser * 0.0002);  // outline thickness changes
                                       // with window size
                                       
 	for (const Ball& ball: m_sim.balls)
 	{
+		std::cout << "Drawing ball: " << ball << std::endl;
 		ball.draw(cr, width, height);
 	}
 

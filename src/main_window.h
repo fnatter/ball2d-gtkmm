@@ -7,18 +7,22 @@
 class MainWindow : public Gtk::Window
 {
 public:
-  MainWindow();
-  ~MainWindow() override;
+	MainWindow();
+	~MainWindow() override;
 
 protected:
-  //signal handlers:
+	//signal handlers:
+	bool on_timer();
 
-  //Member widgets:
-  Gtk::Frame m_BallFrame;
-  Gtk::Box m_VBox;
-  BallDrawingArea m_BallArea;
+	//Member widgets:
+	Gtk::Frame m_BallFrame;
+	Gtk::Box m_VBox;
+	BallDrawingArea m_BallArea;
+	BallSimulation m_sim;
+	
+	static const unsigned int simTimeoutMs = 200;
 
-  //Cairo::RefPtr<Cairo::Surface> m_surface;
+	//Cairo::RefPtr<Cairo::Surface> m_surface;
 };
 
 

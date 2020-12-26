@@ -5,6 +5,8 @@
 #include "utils.h"
 #include <gtkmm.h>
 
+#include <ostream>
+
 // TODO: copy ctor!
 class Ball
 {
@@ -13,6 +15,7 @@ public:
 	Ball();
 	
 	void randomizePosition();
+	void print(std::ostream& out) const;
 	
 	/*
 		find out at which time the ball will first touch (cx,cy)
@@ -54,5 +57,10 @@ public:
 	Event lastEvent;
 };
 
+inline std::ostream& operator<<(std::ostream& out, const Ball& ball)
+{
+	ball.print(out);
+	return out;
+}
 
 #endif /* SRC_BALL_H */

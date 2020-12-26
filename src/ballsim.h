@@ -11,8 +11,10 @@ struct BallSimulation
 public:
 	BallSimulation();
 	
-	bool collision_with_other(Ball* b);
+	void initRandomPosition();
+	
 	bool move(number* delta_t);
+	bool collision_with_other(Ball* b);
 	
 public:
     long iteration_number;
