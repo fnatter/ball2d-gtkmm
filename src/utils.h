@@ -31,4 +31,6 @@ auto as_integer(Enumeration const value)
     return static_cast<typename std::underlying_type<Enumeration>::type>(value);
 }
 
+static const unsigned int simTimeoutMs = 20;
+
 #endif /* SRC_MATHS_H */

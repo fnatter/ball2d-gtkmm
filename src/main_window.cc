@@ -8,7 +8,7 @@ MainWindow::MainWindow()
 	set_title("ball2d-gtkmm");
 	set_border_width(8);
 
-	m_VBox.set_border_width(8);
+	m_VBox.set_border_width(0);
 	add(m_VBox);
 
 	// Create the ball2d area
@@ -31,12 +31,12 @@ MainWindow::~MainWindow()
 
 bool MainWindow::on_timer()
 {
-	std::cout << "Timer event\n";
+	//std::cout << "Timer event\n";
 	
 	number delta_t_remaining = SINGLE_TIME_STEP;
     while (m_sim.move(&delta_t_remaining))
     {
-		std::cout << "in loop: delta_t_remaining=" << delta_t_remaining << std::endl;
+		//std::cout << "in loop: delta_t_remaining=" << delta_t_remaining << std::endl;
     }
 	
 	m_BallArea.queue_draw();

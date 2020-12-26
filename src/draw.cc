@@ -28,7 +28,9 @@ bool BallDrawingArea::on_drawingarea_draw(const Cairo::RefPtr<Cairo::Context>& c
                                       
 	for (const Ball& ball: m_sim.balls)
 	{
+#ifdef LOGGING
 		std::cout << "Drawing ball: " << ball << std::endl;
+#endif
 		ball.draw(cr, width, height);
 	}
 

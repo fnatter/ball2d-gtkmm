@@ -45,6 +45,9 @@ public:
 	
 	void rotate(Ball* b, number degrees, bool clockWise);
 	
+	static bool doCollision(Ball* b1, Ball* b2);
+	
+	
 	void draw(const Cairo::RefPtr<Cairo::Context>& cr, const int width, const int height) const;
 
 public:

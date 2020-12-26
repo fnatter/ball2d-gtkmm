@@ -180,7 +180,7 @@ bool BallSimulation::move(number* delta_t)
             break;
           
         case EventType::BALL_COLLISION:
-            //Ball_doCollision(b, b2);
+            Ball::doCollision(b, b2);
             break;
 
         case EventType::OBSTACLE_COLLISION:

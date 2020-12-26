@@ -20,8 +20,6 @@ protected:
 	BallDrawingArea m_BallArea;
 	BallSimulation m_sim;
 	
-	static const unsigned int simTimeoutMs = 200;
-
 	//Cairo::RefPtr<Cairo::Surface> m_surface;
 };
 

@@ -195,11 +195,13 @@ void Ball::draw(const Cairo::RefPtr<Cairo::Context>& cr,
 	int sx = (int)(((this->x - MINX) / (MAXX - MINX)) * (width-1) + 0.5);
 	int sy = (int)(((this->y - MINY) / (MAXY - MINY)) * (height-1) + 0.5);
 	int r = (int)(((this->radius)/(MAXX-MINX)) * (width-1) + 0.5);
-	
+
+#ifdef LOGGING	
 	std::cout << "Ball::draw: width=" << width << ", height=" << height
 	          << ", sx=" << sx << ", sy=" << sy
 	          << ", r=" << r << std::endl;
-		
+#endif
+
 	cr->save();
 	cr->arc(sx, sy, r, 0.0, 2.0 * M_PI); // full circle
 	cr->set_source_rgba(0.0, 0.0, 0.8, 0.6);    // partially translucent
@@ -819,3 +821,70 @@ void Ball::rotate(Ball* b, number degrees, bool clockWise)
     b->dx = dirVec.x;
     b->dy = dirVec.y;
 }
+
+bool Ball::doCollision(Ball* b1, Ball* b2)
+{
+    Vector2D position_b1, position_b2, line_of_sight, b1_velocity_before, b2_velocity_before, b1_velocity_after, b2_velocity_after;
+    double b1_velocity_in_line_of_sight, b2_velocity_in_line_of_sight, b1_velocity_in_line_of_sight_before, b2_velocity_in_line_of_sight_before, b1_change_in_line_of_sight_velocity, b2_change_in_line_of_sight_velocity;
+
+#ifdef LOGGING
+    std::cout << "Ball_doCollision()\n";
+#endif
+    /*
+      if (b1->lastEvent.type == BALL_COLLISION &&
+      b1->lastEvent.otherBall == b2 &&
+      b2->lastEvent.type == BALL_COLLISION &&
+      b2->lastEvent.otherBall == b1)
+      return false;
+    */
+
+    position_b1.x = b1->x; position_b1.y = b1->y;
+    position_b2.x = b2->x; position_b2.y = b2->y;
+    line_of_sight = Vector2D_sub(&position_b2, &position_b1);
+
+    Vector2D_normalize(&line_of_sight);
+
+    b1_velocity_before.x = b1->dx * b1->velocity; b1_velocity_before.y = b1->dy * b1->velocity;
+    b2_velocity_before.x = b2->dx * b2->velocity; b2_velocity_before.y = b2->dy * b2->velocity;
+
+    b1_velocity_in_line_of_sight_before = Vector2D_scalarProjectionOfVec1OntoVec2(&b1_velocity_before, &line_of_sight);
+    b2_velocity_in_line_of_sight_before = Vector2D_scalarProjectionOfVec1OntoVec2(&b2_velocity_before, &line_of_sight);
+
+    b1_velocity_in_line_of_sight = b1_velocity_in_line_of_sight_before * (b1->mass - b2->mass) / (b1->mass + b2->mass) + b2_velocity_in_line_of_sight_before * 2.0 * b2->mass / (b1->mass + b2->mass);
+    b2_velocity_in_line_of_sight = b1_velocity_in_line_of_sight_before * 2.0 * b1->mass / (b1->mass + b2->mass) + b2_velocity_in_line_of_sight_before * (b2->mass - b1->mass) / (b2->mass + b1->mass);
+
+    b1_change_in_line_of_sight_velocity = b1_velocity_in_line_of_sight - b1_velocity_in_line_of_sight_before;
+    b2_change_in_line_of_sight_velocity = b2_velocity_in_line_of_sight - b2_velocity_in_line_of_sight_before;
+
+    b1_velocity_after.x = b1_velocity_before.x + line_of_sight.x * b1_change_in_line_of_sight_velocity;
+    b1_velocity_after.y = b1_velocity_before.y + line_of_sight.y * b1_change_in_line_of_sight_velocity;
+
+    b2_velocity_after.x = b2_velocity_before.x + line_of_sight.x * b2_change_in_line_of_sight_velocity;
+    b2_velocity_after.y = b2_velocity_before.y + line_of_sight.y * b2_change_in_line_of_sight_velocity;
+
+    b1->velocity = Vector2D_length(&b1_velocity_after);
+    b2->velocity = Vector2D_length(&b2_velocity_after);
+    Vector2D_normalize(&b1_velocity_after);
+    Vector2D_normalize(&b2_velocity_after);
+    b1->dx = b1_velocity_after.x;
+    b1->dy = b1_velocity_after.y;
+    b2->dx = b2_velocity_after.x;
+    b2->dy = b2_velocity_after.y;
+
+    b1->lastEvent.type = EventType::BALL_COLLISION;
+    b1->lastEvent.ball = b1;
+    b1->lastEvent.ball2 = b2;
+    b2->lastEvent.type = EventType::BALL_COLLISION;
+    b2->lastEvent.ball = b2;
+    b2->lastEvent.ball2 = b1;
+  
+    /*
+      b1->x += b1->dx * b1->velocity * SINGLE_TIME_STEP;
+      b1->y += b1->dy * b1->velocity * SINGLE_TIME_STEP;
+      b2->x += b2->dx * b2->velocity * SINGLE_TIME_STEP;
+      b2->y += b2->dy * b2->velocity * SINGLE_TIME_STEP;
+    */
+
+    return true;
+}
+
