@@ -4,11 +4,16 @@
 
 BallSimulation::BallSimulation()
 {
+	max_radius = -100.0;
+	
 	unsigned int numberOfBalls = 20;
 	for (size_t i = 0; i < numberOfBalls; i++)
 	{
 		balls.push_back(Ball());
 	}
+	
+	nextEvent.type = EventType::NONE;
+	nextEvent.delta_t = INFINITY;
 }
 
 bool BallSimulation::collision_with_other(Ball* b)
@@ -164,7 +169,7 @@ bool BallSimulation::move(number* delta_t)
 #ifdef EVENT_LOGGING
             std::cout << "Checking for path intersections with obstacles...";
 #endif
-            for (j = 0; j < nObstacles; j++)
+            for (j = 0; j < obstacles.size(); j++)
             {
                 /* do not re-collide with same obstacle with no event in
                    between! */
@@ -183,7 +188,7 @@ bool BallSimulation::move(number* delta_t)
 #ifdef EVENT_LOGGING
             std::cout << "Checking for path intersections with poly obstacles...";
 #endif
-            for (j = 0; j < nPolyObstacles; j++)
+            for (j = 0; j < polyObstacles.size(); j++)
             {
                 cball->findPolygonalObstaclePathIntersection(&polyObstacles[j], &ev);
 

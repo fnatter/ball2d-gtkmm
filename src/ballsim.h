@@ -20,11 +20,7 @@ public:
     std::time_t lastZombieTime;
 
     std::vector<Ball> balls;
-    // TODO: remove
-    int nObstacles;
     std::vector<Obstacle> obstacles;
-    // TODO: remove
-    int nPolyObstacles;
     std::vector<PolygonalObstacle> polyObstacles;
   
     bool dbuf;
