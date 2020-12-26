@@ -53,8 +53,8 @@ public:
     int polyObsCollType; 
     PolygonalObstacle* polyObstacle;
 
-    const Ball* ball;
-    const Ball* ball2;
+    Ball* ball;
+    Ball* ball2;
 
     number delta_t;
 };

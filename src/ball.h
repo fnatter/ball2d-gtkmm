@@ -21,10 +21,10 @@ public:
 	*/
 	bool Obstacle_collision_check(Obstacle* obstacle, ObstacleCollisionType* type) const;
 	bool pointInside(number x, number y) const;
-	void findPolygonalObstaclePathIntersection(PolygonalObstacle* polyObs, Event* ev) const;
-	void findWallIntersection(Event* ev) const;
+	void findPolygonalObstaclePathIntersection(PolygonalObstacle* polyObs, Event* ev);
+	void findWallIntersection(Event* ev);
 	number findPathPointIntersection(number cx, number cy) const;
-	void findObstacleIntersection(Obstacle* ob, Event* ev) const;
+	void findObstacleIntersection(Obstacle* ob, Event* ev);
 	
 	/*
 		This was solved via maxima (GPL) with the following command:
@@ -32,9 +32,15 @@ public:
 		(r1+r2)^2], t);
 	*/
 	static number findPathIntersection(Ball* b1, Ball* b2);
-
 	static bool collision_check(Ball* b1, Ball* b2);
+	static bool pointInPolygon(number px, number py, PolygonalObstacle* polyObs);
 
+	void setDirectionForTarget(number tx, number ty);
+	bool boundedEdge_collision_check(Vector2D P1, Vector2D P2) const;
+	bool polygonalObstacle_collision_check(PolygonalObstacle* polyObs) const;
+	bool obstacle_collision_check(Obstacle* obstacle, ObstacleCollisionType* type) const;
+	
+	void rotate(Ball* b, number degrees, bool clockWise);
 	
 	void draw(const Cairo::RefPtr<Cairo::Context>& cr, const int width, const int height) const;
 

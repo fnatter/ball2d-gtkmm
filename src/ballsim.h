@@ -12,6 +12,7 @@ public:
 	BallSimulation();
 	
 	bool collision_with_other(Ball* b);
+	bool move(number* delta_t);
 	
 public:
     long iteration_number;
@@ -19,8 +20,10 @@ public:
     std::time_t lastZombieTime;
 
     std::vector<Ball> balls;
+    // TODO: remove
     int nObstacles;
     std::vector<Obstacle> obstacles;
+    // TODO: remove
     int nPolyObstacles;
     std::vector<PolygonalObstacle> polyObstacles;
   
