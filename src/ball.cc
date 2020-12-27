@@ -188,28 +188,6 @@ bool Ball::pointInside(number x, number y) const
         return false;
 }
 
-void Ball::draw(const Cairo::RefPtr<Cairo::Context>& cr,
-	const int width, const int height) const
-{
-	const int lesser = std::min(width, height);
-	int sx = (int)(((this->x - MINX) / (MAXX - MINX)) * (width-1) + 0.5);
-	int sy = (int)(((this->y - MINY) / (MAXY - MINY)) * (height-1) + 0.5);
-	int r = (int)(((this->radius)/(MAXX-MINX)) * (width-1) + 0.5);
-
-#ifdef LOGGING	
-	std::cout << "Ball::draw: width=" << width << ", height=" << height
-	          << ", sx=" << sx << ", sy=" << sy
-	          << ", r=" << r << std::endl;
-#endif
-
-	cr->save();
-	cr->arc(sx, sy, r, 0.0, 2.0 * M_PI); // full circle
-	cr->set_source_rgba(0.0, 0.0, 0.8, 0.6);    // partially translucent
-	cr->fill_preserve();
-	cr->restore();  // back to opaque black
-	cr->stroke();
-}
-
 void Ball::findPolygonalObstaclePathIntersection(PolygonalObstacle* polyObs, Event* ev)
 {
     int numberPoints = polyObs->points.size();
@@ -809,17 +787,17 @@ bool Ball::obstacle_collision_check(Obstacle* obstacle, ObstacleCollisionType* t
     return false;
 }
 
-void Ball::rotate(Ball* b, number degrees, bool clockWise)
+void Ball::rotate(number degrees, bool clockWise)
 {
     Vector2D dirVec;
   
-    dirVec.x = b->dx;
-    dirVec.y = b->dy;
+    dirVec.x = this->dx;
+    dirVec.y = this->dy;
     
     Vector2D_rotate(&dirVec, degrees, clockWise);
     
-    b->dx = dirVec.x;
-    b->dy = dirVec.y;
+    this->dx = dirVec.x;
+    this->dy = dirVec.y;
 }
 
 bool Ball::doCollision(Ball* b1, Ball* b2)
@@ -888,3 +866,147 @@ bool Ball::doCollision(Ball* b1, Ball* b2)
     return true;
 }
 
+bool Ball::doObstacleCollision(Obstacle* obstacle, ObstacleCollisionType obsCollType)
+{
+    switch(obsCollType)
+    {
+        Vector2D center_of_ball, corner, virtualWall;
+        number cosAngle, angle;
+      
+    case ObstacleCollisionType::LEFT_EDGE:
+    case ObstacleCollisionType::RIGHT_EDGE:
+        this->dx = -this->dx;
+        break;
+    case ObstacleCollisionType::TOP_EDGE:
+    case ObstacleCollisionType::BOTTOM_EDGE:
+        this->dy = -this->dy;
+        break;
+    case ObstacleCollisionType::TOPLEFT_CORNER:
+#ifdef LOGGING
+        std::cout << "Ball_doObstacleCollision(): TOPLEFT_CORNER\n";
+#endif
+        center_of_ball.x = this->x;
+        center_of_ball.y = this->y;
+        corner.x = obstacle->x1;
+        corner.y = obstacle->y1;
+      
+        /* calculate the normal to the virtual wall */
+        virtualWall = Vector2D_sub(&center_of_ball, &corner);
+        Vector2D_normalize(&virtualWall);
+        /* convert normal to virtual wall */
+        Vector2D_rotate(&virtualWall, 90.0, false);
+        /* determine angle to x axis (scalar product between virtualWall and
+           obstacle edge (0,1)) */
+        cosAngle = virtualWall.y;
+        angle = acos(cosAngle) * 180.0/M_PI;
+
+        /* 1. rotate the setup so that the virtual wall is parallel to y
+           axis */
+        rotate(angle, false);
+        /* 2. treat it like a top wall hit */
+        this->dx = -this->dx;
+        /* 3. rotate back */
+        rotate(angle, true);
+
+        break;
+    case ObstacleCollisionType::TOPRIGHT_CORNER:
+#ifdef LOGGING
+        std::cout << "Ball_doObstacleCollision(): TOPRIGHT_CORNER\n";
+#endif
+
+        center_of_ball.x = this->x;
+        center_of_ball.y = this->y;
+        corner.x = obstacle->x2;
+        corner.y = obstacle->y1;
+      
+        /* calculate the normal to the virtual wall */
+        virtualWall = Vector2D_sub(&center_of_ball, &corner);
+        Vector2D_normalize(&virtualWall);
+        /* convert normal to virtual wall */
+        Vector2D_rotate(&virtualWall, 90.0, false);
+        /* determine angle to x axis (scalar product between virtualWall and
+           obstacle edge (-1, 0)) */
+        cosAngle = -virtualWall.x;
+        angle = acos(cosAngle) * 180.0/M_PI;
+
+        /* 1. rotate the setup so that the virtual wall is parallel to x
+           axis */
+        rotate(angle, false);
+        /* 2. treat it like a bottom wall hit */
+        this->dy = -this->dy;
+        /* 3. rotate back */
+        rotate(angle, true);
+        break;
+
+    case ObstacleCollisionType::BOTTOMLEFT_CORNER:
+#ifdef LOGGING
+        std::cout << "Ball_doObstacleCollision(): BOTTOMLEFT_CORNER\n";
+#endif
+
+        center_of_ball.x = this->x;
+        center_of_ball.y = this->y;
+        corner.x = obstacle->x1;
+        corner.y = obstacle->y2;
+      
+        /* calculate the normal to the virtual wall */
+        virtualWall = Vector2D_sub(&center_of_ball, &corner);
+        Vector2D_normalize(&virtualWall);
+        /* convert normal to virtual wall */
+        Vector2D_rotate(&virtualWall, 90.0, false);
+        /* determine angle to x axis (scalar product between virtualWall and
+           obstacle edge (1,0)) */
+        cosAngle = virtualWall.x;
+        angle = acos(cosAngle) * 180.0/M_PI;
+
+        /* 1. rotate the setup so that the virtual wall is parallel to x
+           axis */
+        rotate(angle, false);
+        /* 2. treat it like a top wall hit */
+        this->dy = -this->dy;
+        /* 3. rotate back */
+        rotate(angle, true);
+        break;
+
+    case ObstacleCollisionType::BOTTOMRIGHT_CORNER:
+#ifdef LOGGING
+        std::cout << "Ball_doObstacleCollision(): BOTTOMRIGHT_CORNER\n";
+#endif
+
+        center_of_ball.x = this->x;
+        center_of_ball.y = this->y;
+        corner.x = obstacle->x2;
+        corner.y = obstacle->y2;
+      
+        /* calculate the normal to the virtual wall */
+        virtualWall = Vector2D_sub(&center_of_ball, &corner);
+        Vector2D_normalize(&virtualWall);
+        /* convert normal to virtual wall */
+        Vector2D_rotate(&virtualWall, 90.0, false);
+        /* determine angle to y axis (scalar product between virtualWall and
+           obstacle edge (0,-1)) */
+        cosAngle = -virtualWall.y;
+        angle = acos(cosAngle) * 180.0/M_PI;
+
+        /* 1. rotate the setup so that the virtual wall is parallel to y
+           axis */
+        rotate(angle, false);
+        /* 2. treat it like a right wall hit */
+        this->dx = -this->dx;
+        /* 3. rotate back */
+        rotate(angle, true);
+        break;
+
+    case ObstacleCollisionType::CENTER_INSIDE:
+        std::cout << "Warning: last obstacle collision type is CENTER_INSIDE. Need smaller step size?\n";
+        abort();
+        break;
+    }
+
+    this->lastEvent.type = EventType::OBSTACLE_COLLISION;
+    this->lastEvent.ball = this;
+    this->lastEvent.ball2 = nullptr;
+    this->lastEvent.obstacle = obstacle;
+    this->lastEvent.obsCollType = obsCollType;
+
+    return true;
+}

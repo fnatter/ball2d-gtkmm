@@ -11,7 +11,8 @@ struct BallSimulation
 public:
 	BallSimulation();
 	
-	void initRandomPosition();
+	void initObstacles();
+	void initRandomPositions();
 	
 	bool move(number* delta_t);
 	bool collision_with_other(Ball* b);

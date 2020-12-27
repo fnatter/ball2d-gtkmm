@@ -43,13 +43,11 @@ public:
 	bool polygonalObstacle_collision_check(PolygonalObstacle* polyObs) const;
 	bool obstacle_collision_check(Obstacle* obstacle, ObstacleCollisionType* type) const;
 	
-	void rotate(Ball* b, number degrees, bool clockWise);
+	void rotate(number degrees, bool clockWise);
 	
 	static bool doCollision(Ball* b1, Ball* b2);
+	bool doObstacleCollision(Obstacle* obstacle, ObstacleCollisionType obsCollType);
 	
-	
-	void draw(const Cairo::RefPtr<Cairo::Context>& cr, const int width, const int height) const;
-
 public:
     number x,y;
     number dx,dy;

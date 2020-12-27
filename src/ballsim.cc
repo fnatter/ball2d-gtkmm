@@ -5,10 +5,10 @@
 BallSimulation::BallSimulation()
 {
 	max_radius = -100.0;
-	unsigned int numberOfBalls = 20;
+	unsigned int numberOfBalls = 100;
 	for (size_t i = 0; i < numberOfBalls; i++)
 	{
-		balls.push_back(Ball());
+		balls.emplace_back();
 		
 		if (balls[i].radius > max_radius)
             max_radius = balls[i].radius;
@@ -18,10 +18,17 @@ BallSimulation::BallSimulation()
 	nextEvent.type = EventType::NONE;
 	nextEvent.delta_t = INFINITY;
 	
-	initRandomPosition();	
+	initObstacles();
+	initRandomPositions();
 }
 
-void BallSimulation::initRandomPosition()
+void BallSimulation::initObstacles()
+{
+	obstacles.emplace_back(-50.0, -40.0, -40.0, 20.0);
+	obstacles.emplace_back(30.0, -10.0, 50.0, 10.0);
+}
+
+void BallSimulation::initRandomPositions()
 {
     ObstacleCollisionType obsCollType;
 
@@ -184,7 +191,7 @@ bool BallSimulation::move(number* delta_t)
             break;
 
         case EventType::OBSTACLE_COLLISION:
-            //Ball_doObstacleCollision(st, b, nextEvent.obstacle, nextEvent.obsCollType);
+            b->doObstacleCollision(nextEvent.obstacle, nextEvent.obsCollType);
             break;
 
         case EventType::POLYGONAL_OBSTACLE_COLLISION:

@@ -25,8 +25,27 @@ enum class ObstacleCollisionType
 
 struct Obstacle
 {
+	Obstacle(number _x1, number _y1, number _x2, number _y2)
+	{
+		x1 = _x1;
+		y1 = _y1;
+		x2 = _x2;
+		y2 = _y2;
+	}
+	
+	void print(std::ostream& out) const
+	{
+		out << "Obstacle[" << x1 << ", " << y1 << ", " << x2 << ", " << y2 << "]";
+	}
+	
     number x1, y1, x2, y2;
 };
+
+inline std::ostream& operator<<(std::ostream& out, const Obstacle& obstacle)
+{
+	obstacle.print(out);
+	return out;
+}
 
 typedef struct
 {

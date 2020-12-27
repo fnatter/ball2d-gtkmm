@@ -13,7 +13,7 @@ public:
 protected:
 	//signal handlers:
 	bool on_drawingarea_draw(const Cairo::RefPtr<Cairo::Context>& cr);
-  
+	
 	const BallSimulation& m_sim;
 };
 
