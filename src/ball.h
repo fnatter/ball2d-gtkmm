@@ -47,6 +47,7 @@ public:
 	
 	static bool doCollision(Ball* b1, Ball* b2);
 	bool doObstacleCollision(Obstacle* obstacle, ObstacleCollisionType obsCollType);
+	bool doPolygonalObstacleCollision(PolygonalObstacle* polyObs, int polyObsCollType);
 	
 public:
     number x,y;

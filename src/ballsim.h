@@ -12,10 +12,14 @@ public:
 	BallSimulation();
 	
 	void initObstacles();
+	void initObstacles2();
 	void initRandomPositions();
 	
 	bool move(number* delta_t);
 	bool collision_with_other(Ball* b);
+	
+	void createStarPolygon(PolygonalObstacle* polyObs, int numberPoints,
+                  number x, number y, number radius1, number radius2);
 	
 public:
     long iteration_number;

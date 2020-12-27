@@ -1010,3 +1010,186 @@ bool Ball::doObstacleCollision(Obstacle* obstacle, ObstacleCollisionType obsColl
 
     return true;
 }
+
+bool Ball::doPolygonalObstacleCollision(PolygonalObstacle* polyObs, int polyObsCollType)
+{
+    Vector2D center_of_ball, corner, virtualWall;
+    number cosAngle, angle;
+
+    center_of_ball.x = this->x;
+    center_of_ball.y = this->y;
+    
+    if (polyObsCollType < polyObs->points.size()) /* corner collision */
+    { 
+        corner.x = polyObs->points[polyObsCollType].x;
+        corner.y = polyObs->points[polyObsCollType].y;
+
+        if (center_of_ball.x >= corner.x)
+        {
+            if (center_of_ball.y >= corner.y)
+            {   /* ball is bottom right relative to corner */
+
+                /* calculate the normal to the virtual wall */
+                virtualWall = Vector2D_sub(&center_of_ball, &corner);
+                Vector2D_normalize(&virtualWall);
+                /* convert normal to virtual wall */
+                Vector2D_rotate(&virtualWall, 90.0, false);
+                /* determine angle to y axis (scalar product between virtualWall and
+                   obstacle edge (0,-1)) */
+                cosAngle = -virtualWall.y;
+                angle = acos(cosAngle) * 180.0/M_PI;
+
+                /* 1. rotate the setup so that the virtual wall is parallel to y
+                   axis */
+                this->rotate(angle, false);
+                /* 2. treat it like a right wall hit */
+                this->dx = -this->dx;
+                /* 3. rotate back */
+                this->rotate(angle, true);
+            }
+            else
+            {   /* ball is top right relative to corner */
+
+                /* calculate the normal to the virtual wall */
+                virtualWall = Vector2D_sub(&center_of_ball, &corner);
+                Vector2D_normalize(&virtualWall);
+                /* convert normal to virtual wall */
+                Vector2D_rotate(&virtualWall, 90.0, false);
+                /* determine angle to x axis (scalar product between virtualWall and
+                   obstacle edge (-1, 0)) */
+                cosAngle = -virtualWall.x;
+                angle = acos(cosAngle) * 180.0/M_PI;
+
+                /* 1. rotate the setup so that the virtual wall is parallel to x
+                   axis */
+                this->rotate(angle, false);
+                /* 2. treat it like a bottom wall hit */
+                this->dy = -this->dy;
+                /* 3. rotate back */
+                this->rotate(angle, true);
+            }
+        }
+        else
+        {
+            if (center_of_ball.y >= corner.y)
+            {   /* ball is bottom left relative to corner */
+
+                /* calculate the normal to the virtual wall */
+                virtualWall = Vector2D_sub(&center_of_ball, &corner);
+                Vector2D_normalize(&virtualWall);
+                /* convert normal to virtual wall */
+                Vector2D_rotate(&virtualWall, 90.0, false);
+                /* determine angle to x axis (scalar product between virtualWall and
+                   obstacle edge (1,0)) */
+                cosAngle = virtualWall.x;
+                angle = acos(cosAngle) * 180.0/M_PI;
+
+                /* 1. rotate the setup so that the virtual wall is parallel to x
+                   axis */
+                this->rotate(angle, false);
+                /* 2. treat it like a top wall hit */
+                this->dy = -this->dy;
+                /* 3. rotate back */
+                this->rotate(angle, true);
+
+            }
+            else
+            {   /* ball is top left relative to corner */
+
+                /* calculate the normal to the virtual wall */
+                virtualWall = Vector2D_sub(&center_of_ball, &corner);
+                Vector2D_normalize(&virtualWall);
+                /* convert normal to virtual wall */
+                Vector2D_rotate(&virtualWall, 90.0, false);
+                /* determine angle to x axis (scalar product between virtualWall and
+                   obstacle edge (0,1)) */
+                cosAngle = virtualWall.y;
+                angle = acos(cosAngle) * 180.0/M_PI;
+                
+                /* 1. rotate the setup so that the virtual wall is parallel to y
+                   axis */
+                this->rotate(angle, false);
+                /* 2. treat it like a top wall hit */
+                this->dx = -this->dx;
+                /* 3. rotate back */
+                this->rotate(angle, true);
+            }
+        }
+    }
+    else /* edge collision */
+    {
+        Vector2D P1, P2, P1P2, v, yAxis;
+        int k = polyObsCollType - polyObs->points.size();
+        number cos_alpha, alpha;
+
+        P1 = polyObs->points[k];
+        P2 = polyObs->points[k == polyObs->points.size() - 1 ? 0 : k+1];
+
+        P1P2 = Vector2D_sub(&P2, &P1);
+        v.x = this->dx;
+        v.y = this->dy;
+        
+        if (P1P2.y < 0.0)
+        {
+            if (P1P2.x >= 0.0)
+            { /* quadrant I */
+                yAxis.x = 0.0;
+                yAxis.y = -1.0;
+                cos_alpha = Vector2D_scalarProduct(&P1P2, &yAxis)/Vector2D_length(&P1P2);
+                alpha = acos(cos_alpha)/M_PI * 180.0;
+                Vector2D_rotate(&v, alpha, false);
+                v.x = -v.x;
+                Vector2D_rotate(&v, alpha, true);
+                this->dx = v.x;
+                this->dy = v.y;
+            }
+            else
+            { /* Quadrant II */
+                yAxis.x = 0.0;
+                yAxis.y = -1.0;
+                cos_alpha = Vector2D_scalarProduct(&P1P2, &yAxis)/Vector2D_length(&P1P2);
+                alpha = acos(cos_alpha)/M_PI * 180.0;
+                Vector2D_rotate(&v, alpha, true);
+                v.x = -v.x;
+                Vector2D_rotate(&v, alpha, false);
+                this->dx = v.x;
+                this->dy = v.y;
+            }
+        }
+        else
+        {
+            if (P1P2.x >= 0.0)
+            { /* Quadrant IV */
+                yAxis.x = 0.0;
+                yAxis.y = 1.0;
+                cos_alpha = Vector2D_scalarProduct(&P1P2, &yAxis)/Vector2D_length(&P1P2);
+                alpha = acos(cos_alpha)/M_PI * 180.0;
+                Vector2D_rotate(&v, alpha, true);
+                v.x = -v.x;
+                Vector2D_rotate(&v, alpha, false);
+                this->dx = v.x;
+                this->dy = v.y;
+            }
+            else
+            { /* Quadrant III */
+                yAxis.x = 0.0;
+                yAxis.y = 1.0;
+                cos_alpha = Vector2D_scalarProduct(&P1P2, &yAxis)/Vector2D_length(&P1P2);
+                alpha = acos(cos_alpha)/M_PI * 180.0;
+                Vector2D_rotate(&v, alpha, false);
+                v.x = -v.x;
+                Vector2D_rotate(&v, alpha, true);
+                this->dx = v.x;
+                this->dy = v.y;
+            }
+        }
+    }
+
+    this->lastEvent.type = EventType::POLYGONAL_OBSTACLE_COLLISION;
+    this->lastEvent.ball = this;
+    this->lastEvent.ball2 = nullptr;
+    this->lastEvent.polyObstacle = polyObs;
+    this->lastEvent.polyObsCollType = polyObsCollType;
+
+    return true;
+}

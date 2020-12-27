@@ -18,7 +18,10 @@ BallSimulation::BallSimulation()
 	nextEvent.type = EventType::NONE;
 	nextEvent.delta_t = INFINITY;
 	
-	initObstacles();
+	//initObstacles2();
+	polyObstacles.resize(1);
+	createStarPolygon(&polyObstacles[0], 24, 0, 0, 70, 10);
+	
 	initRandomPositions();
 }
 
@@ -26,6 +29,27 @@ void BallSimulation::initObstacles()
 {
 	obstacles.emplace_back(-50.0, -40.0, -40.0, 20.0);
 	obstacles.emplace_back(30.0, -10.0, 50.0, 10.0);
+}
+
+void BallSimulation::initObstacles2()
+{
+	double obstacleSize = 10.0;
+	int numCols = 5, numRows = 3;
+	double xSpacing = (MAXX-MINX)/(numCols+1);
+	double ySpacing = (MAXY-MINY)/(numRows+1);
+
+	startGrid = false;
+
+	for (int i = 1; i <= numRows; i++)
+	{
+		for (int j = 1; j <= numCols; j++)
+		{
+			double x = MINX + j*xSpacing;
+			double y = MINY + i*ySpacing;
+			
+			obstacles.emplace_back(x-obstacleSize/2, y-obstacleSize/2, x+obstacleSize/2, y+obstacleSize/2);
+		}
+	}
 }
 
 void BallSimulation::initRandomPositions()
@@ -195,7 +219,7 @@ bool BallSimulation::move(number* delta_t)
             break;
 
         case EventType::POLYGONAL_OBSTACLE_COLLISION:
-            //Ball_doPolygonalObstacleCollision(st, b, nextEvent.polyObstacle, nextEvent.polyObsCollType);
+            b->doPolygonalObstacleCollision(nextEvent.polyObstacle, nextEvent.polyObsCollType);
             break;
 
         case EventType::NONE:
@@ -319,4 +343,20 @@ bool BallSimulation::move(number* delta_t)
     }
 
     return *delta_t > 0.0;
+}
+
+void BallSimulation::createStarPolygon(PolygonalObstacle* polyObs, int numberPoints,
+                  number x, number y, number radius1, number radius2)
+{
+    polyObs->points.resize(numberPoints);
+	number radPerPoint = 2*M_PI / polyObs->points.size();
+    number angle = new_number_random(0.0, 2*M_PI);
+    for (size_t i = 0; i < polyObs->points.size(); i++)
+    {
+        polyObs->points[i].x = x +
+            cos(angle) * (i % 2 == 0 ? radius1 : radius2);
+        polyObs->points[i].y = y +
+            sin(angle) * (i % 2 == 0 ? radius1 : radius2);
+        angle += radPerPoint;
+    }
 }
