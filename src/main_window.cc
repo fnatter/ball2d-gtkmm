@@ -29,6 +29,49 @@ MainWindow::~MainWindow()
 {
 }
 
+int MainWindow::on_cmdline(const Glib::RefPtr<Gio::ApplicationCommandLine>& cmdline, Glib::RefPtr<Gtk::Application> &app)
+{
+	app->activate();
+	
+	Glib::OptionContext ctx;
+	Glib::OptionGroup group("options", "main options");
+	
+	Glib::OptionEntry entry;
+	entry.set_short_name('n');
+	entry.set_long_name("number-of-balls");
+	entry.set_description("the number of balls in the simulation");
+	group.add_entry(entry, m_sim.numberOfBalls);
+	
+	entry = Glib::OptionEntry();
+	entry.set_long_name("tiny");
+	entry.set_description("use only small balls");
+	group.add_entry(entry, m_sim.tinyMode);
+	
+	entry = Glib::OptionEntry();
+	entry.set_long_name("debian");
+	entry.set_description("arrange starting points as Debian logo");
+	group.add_entry(entry, m_sim.debianMode);
+
+	entry = Glib::OptionEntry();
+	entry.set_long_name("corners");
+	entry.set_description("corners are starting points");
+	group.add_entry(entry, m_sim.cornersMode);
+
+	ctx.add_group(group);
+
+	// add GTK options, --help-gtk, etc
+	Glib::OptionGroup gtkgroup(gtk_get_option_group(true));
+	ctx.add_group(gtkgroup);
+	
+	int argc;
+	char **argv = cmdline->get_arguments(argc);
+	ctx.parse(argc, argv);
+	
+	m_sim.init();
+
+	return 0;
+}
+
 bool MainWindow::on_timer()
 {
 	//std::cout << "Timer event\n";

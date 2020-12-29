@@ -12,7 +12,7 @@ class Ball
 {
 public:
 
-	Ball();
+	Ball(bool tinyMode, bool debianMode, bool cornersMode);
 	
 	void randomizePosition();
 	void print(std::ostream& out) const;

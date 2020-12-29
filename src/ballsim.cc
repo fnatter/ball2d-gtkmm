@@ -4,23 +4,33 @@
 
 BallSimulation::BallSimulation()
 {
+	// set some defaults
+	numberOfBalls = 100;
+	tinyMode = false;
+	debianMode = false;
+	cornersMode = false;
+
+	// we cannot call init() here because the command line
+	// options are not parsed yet!
+}
+
+void BallSimulation::init()
+{
 	max_radius = -100.0;
-	unsigned int numberOfBalls = 100;
 	for (size_t i = 0; i < numberOfBalls; i++)
 	{
-		balls.emplace_back();
-		
+		balls.emplace_back(tinyMode, debianMode, cornersMode);
+
 		if (balls[i].radius > max_radius)
             max_radius = balls[i].radius;
-
 	}
 	
 	nextEvent.type = EventType::NONE;
 	nextEvent.delta_t = INFINITY;
 	
 	//initObstacles2();
-	polyObstacles.resize(1);
-	createStarPolygon(&polyObstacles[0], 24, 0, 0, 70, 10);
+	//polyObstacles.resize(1);
+	//createStarPolygon(&polyObstacles[0], 24, 0, 0, 70, 10);
 	
 	initRandomPositions();
 }
@@ -96,7 +106,12 @@ void BallSimulation::initRandomPositions()
 			{
 				/* it is very likely that there's no space left for the
 				   i'th ball */
-				balls.resize(i-1);
+				//balls.resize(i-1);
+				// TODO: correct?
+				while (balls.size() > (i-1))
+				{
+					balls.pop_back();
+				}
 				break;
 			}
 		} // while(conflict)

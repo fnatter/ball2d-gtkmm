@@ -5,14 +5,10 @@
 
 using namespace std;
 
-Ball::Ball()
+Ball::Ball(bool tinyMode, bool debianMode, bool cornersMode)
 { 
     int angle;
     
-    bool tinyMode = false;
-    bool debianMode = false;
-    bool cornersMode = false;
-
     if (tinyMode) /* tiny mode: 95% small balls */
     {
         int tinyProb = new_number_random_int(1, 100);

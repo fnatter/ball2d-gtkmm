@@ -11,6 +11,8 @@ struct BallSimulation
 public:
 	BallSimulation();
 	
+	void init();
+	
 	void initObstacles();
 	void initObstacles2();
 	void initRandomPositions();
@@ -29,19 +31,21 @@ public:
     std::vector<Ball> balls;
     std::vector<Obstacle> obstacles;
     std::vector<PolygonalObstacle> polyObstacles;
-  
+
+    int numberOfBalls;
+    bool tinyMode;
+    bool debianMode;
+    bool cornersMode;
+      
     bool dbuf;
     int delay;
-    int count;
     int ncolors;
     bool showVelocityVectors;
     int* startAngles;
     int numStartAngles;
-    bool tiny;
+
     bool startGrid;
     bool zombies;
-    bool corners;
-    bool debian;
     bool slowStart;
     number max_radius;
     bool showFutureCollisions;

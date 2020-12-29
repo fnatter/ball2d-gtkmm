@@ -6,14 +6,17 @@
 
 class MainWindow : public Gtk::Window
 {
+	
 public:
 	MainWindow();
 	~MainWindow() override;
 
-protected:
 	//signal handlers:
 	bool on_timer();
+	int on_cmdline(const Glib::RefPtr<Gio::ApplicationCommandLine> & cmdline,
+		Glib::RefPtr<Gtk::Application> &appl);
 
+protected:
 	//Member widgets:
 	Gtk::Frame m_BallFrame;
 	Gtk::Box m_VBox;
