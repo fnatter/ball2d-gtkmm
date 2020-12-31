@@ -20,6 +20,17 @@ BallSimulation::BallSimulation()
 
 void BallSimulation::init()
 {
+	if (cornersMode)
+	{
+		if (numberOfBalls < 8)
+			numberOfBalls = 8;
+		else if (numberOfBalls > 32)
+			numberOfBalls = 32;
+		else
+			numberOfBalls -= numberOfBalls % 8;
+	}
+
+	
 	if (debianMode || cornersMode)
 	{
 		slowStartMode = true;
@@ -45,6 +56,10 @@ void BallSimulation::init()
 	if (debianMode)
 	{
 		initDebianPositions();
+	}
+	else if (cornersMode)
+	{
+		initCornerPositions();
 	}
 	else
 	{
@@ -75,6 +90,100 @@ void BallSimulation::initObstacles2()
 			obstacles.emplace_back(x-obstacleSize/2, y-obstacleSize/2, x+obstacleSize/2, y+obstacleSize/2);
 		}
 	}
+}
+
+void BallSimulation::initCornerPositions()
+{
+    int numberBallsPerCorner = numberOfBalls / 8;
+    int ballCounter = 0;
+
+    // left
+    if (tryPlaceBallsInCorner(&ballCounter, 
+                            MINX + SINGLE_STEP + max_radius,
+                            MINY + (MAXY-MINY)/2.0,
+                            numberBallsPerCorner))
+    {
+        // collision - stop placing balls!
+        resizeBalls(ballCounter);
+        return;
+    }
+
+    // top left
+    if (tryPlaceBallsInCorner(&ballCounter, 
+                            MINX + SINGLE_STEP + max_radius,
+                            MINY + SINGLE_STEP + max_radius,
+                            numberBallsPerCorner))
+    {
+        // collision - stop placing balls!
+        resizeBalls(ballCounter);
+        return;
+    }
+
+    // top 
+    if (tryPlaceBallsInCorner(&ballCounter, 
+                            MINX + (MAXX-MINX)/2.0,
+                            MINY + SINGLE_STEP + max_radius,
+                            numberBallsPerCorner))
+    {
+        // collision - stop placing balls!
+        resizeBalls(ballCounter);
+        return;
+    }
+
+    // top right
+    if (tryPlaceBallsInCorner(&ballCounter, 
+                            MAXX - SINGLE_STEP - max_radius,
+                            MINY + SINGLE_STEP + max_radius,
+                            numberBallsPerCorner))
+    {
+        // collision - stop placing balls!
+        resizeBalls(ballCounter);
+        return;
+    }
+
+    // right
+    if (tryPlaceBallsInCorner(&ballCounter, 
+                            MAXX - SINGLE_STEP - max_radius,
+                            MINY + (MAXY-MINY)/2.0,
+                            numberBallsPerCorner))
+    {
+        // collision - stop placing balls!
+        resizeBalls(ballCounter);
+        return;
+    }
+
+    // bottom right
+    if (tryPlaceBallsInCorner(&ballCounter, 
+                            MAXX - SINGLE_STEP - max_radius,
+                            MAXY - SINGLE_STEP - max_radius,
+                            numberBallsPerCorner))
+    {
+        // collision - stop placing balls!
+        resizeBalls(ballCounter);
+        return;
+    }
+      
+    // bottom
+    if (tryPlaceBallsInCorner(&ballCounter, 
+                            MINX + (MAXX-MINX)/2.0,
+                            MAXY - SINGLE_STEP - max_radius,
+                            numberBallsPerCorner))
+    {
+        // collision - stop placing balls!
+        resizeBalls(ballCounter);
+        return;
+    }
+
+    // bottom left
+    if (tryPlaceBallsInCorner(&ballCounter, 
+                            MINX + SINGLE_STEP + max_radius,
+                            MAXY - SINGLE_STEP - max_radius,
+                            numberBallsPerCorner))
+    {
+        // collision - stop placing balls!
+        resizeBalls(ballCounter);
+        return;
+    }
 }
 
 void BallSimulation::initRandomPositions()
@@ -122,11 +231,7 @@ void BallSimulation::initRandomPositions()
 				/* it is very likely that there's no space left for the
 				   i'th ball */
 				//balls.resize(i-1);
-				// TODO: correct?
-				while (balls.size() > (i-1))
-				{
-					balls.pop_back();
-				}
+				resizeBalls(i-1);
 				break;
 			}
 		} // while(conflict)
@@ -167,7 +272,7 @@ void BallSimulation::initDebianPositions()
 			balls[ballCounter].y + balls[ballCounter].radius > MAXY)
 		{
 			//std::cout << "Stopping after ballCounter=" << ballCounter << "\n";
-			//break;
+			break;
 		}
 		
 		ballCounter++;
@@ -175,11 +280,8 @@ void BallSimulation::initDebianPositions()
 		if (ballCounter == numberOfBalls)
 			break;
 	}
-	std::cout << "Done with Debian: ballCounter=" << ballCounter << ", balls.size()=" << balls.size() << "\n";
-	while (balls.size() > ballCounter)
-	{
-		balls.pop_back();
-	}
+	//std::cout << "Done with Debian: ballCounter=" << ballCounter << ", balls.size()=" << balls.size() << "\n";
+	resizeBalls(ballCounter);
 }
 
 bool BallSimulation::collision_with_other(Ball* b)
@@ -205,28 +307,10 @@ void BallSimulation::innerLoop()
 		delta_t_remaining *= 0.05;
 	}
 	
-    long startMoveMicroseconds = time_microseconds(), endMoveMicroseconds, ballsMoveMicroseconds; 
     while (move(&delta_t_remaining))
     {
 		//std::cout << "in loop: delta_t_remaining=" << delta_t_remaining << std::endl;
     }
-    endMoveMicroseconds = time_microseconds();
-    ballsMoveMicroseconds = endMoveMicroseconds - startMoveMicroseconds;
-    
-    /*
-    long thisDelay;
-	if (slowStartMode && timeDelta <= 15)
-		thisDelay = (delay - ballsMoveMicroseconds) * 2;
-	else
-		thisDelay = (delay - ballsMoveMicroseconds);
-	if (thisDelay < 0)
-		thisDelay = 0;
-	usleep(delay);
-	if (slowStartMode && timeDelta <= 1500)
-	{
-		usleep(2000);
-	}
-	*/
 }
 
 bool BallSimulation::move(number* delta_t)
@@ -472,4 +556,47 @@ void BallSimulation::createStarPolygon(PolygonalObstacle* polyObs, int numberPoi
             sin(angle) * (i % 2 == 0 ? radius1 : radius2);
         angle += radPerPoint;
     }
+}
+
+void BallSimulation::resizeBalls(int newNumberOfBalls)
+{
+	if (balls.size() < newNumberOfBalls)
+	{
+		throw std::runtime_error("Cannot extend initial balls.size()!");
+	}
+	while (balls.size() > newNumberOfBalls)
+	{
+		balls.pop_back();
+	}
+	// this is redundant...
+	numberOfBalls = balls.size();
+}
+
+// place up to numberBallsForThisCorner number balls in a corner 
+bool BallSimulation::tryPlaceBallsInCorner(int* ballCounter, number cornerX, number cornerY, int numberBallsForThisCorner)
+{
+	Vector2D pos;
+	// starting point in corner
+	pos.x = cornerX;
+	pos.y = cornerY;
+
+	for (int i = 0; i < numberBallsForThisCorner; ++i)
+	{
+		balls[*ballCounter].x = pos.x;
+		balls[*ballCounter].y = pos.y;
+		balls[*ballCounter].setDirectionForTarget(0.0, 0.0);
+		
+		for (int j =0; j < *ballCounter; ++j)
+		{
+			if (Ball::collision_check(&balls[*ballCounter], &balls[j]))
+			{
+				return true;
+			}
+		}
+		  
+		pos.x += balls[*ballCounter].dx * 2*max_radius;
+		pos.y += balls[*ballCounter].dy * 2*max_radius;
+		(*ballCounter)++;
+	}
+	return false;
 }
