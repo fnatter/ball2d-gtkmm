@@ -2,12 +2,20 @@
 #define SRC_MATHS_H 1
 
 #include <type_traits>
+#include <sys/time.h>
 
 typedef double number;
 
 inline number pow2(number x)
 {
     return x*x;
+}
+
+inline long time_microseconds(void)
+{
+    struct timeval t;
+    gettimeofday(&t, nullptr);
+    return t.tv_sec*1000000 + t.tv_usec;
 }
 
 const number MINX = -100.0;

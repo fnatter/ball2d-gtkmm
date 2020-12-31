@@ -12,11 +12,15 @@ public:
 	BallSimulation();
 	
 	void init();
+
+	void initRandomPositions();
+	void initDebianPositions();
 	
 	void initObstacles();
 	void initObstacles2();
-	void initRandomPositions();
 	
+	void innerLoop();
+
 	bool move(number* delta_t);
 	bool collision_with_other(Ball* b);
 	
@@ -36,17 +40,16 @@ public:
     bool tinyMode;
     bool debianMode;
     bool cornersMode;
+    bool slowStartMode;
+    bool showVelocityVectors;
       
     bool dbuf;
-    int delay;
     int ncolors;
-    bool showVelocityVectors;
     int* startAngles;
     int numStartAngles;
 
     bool startGrid;
     bool zombies;
-    bool slowStart;
     number max_radius;
     bool showFutureCollisions;
     Event nextEvent;

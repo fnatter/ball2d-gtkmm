@@ -17,6 +17,9 @@ public:
 		Glib::RefPtr<Gtk::Application> &appl);
 
 protected:
+	//Override default signal handler:
+	bool on_key_press_event(GdkEventKey* event) override;
+
 	//Member widgets:
 	Gtk::Frame m_BallFrame;
 	Gtk::Box m_VBox;

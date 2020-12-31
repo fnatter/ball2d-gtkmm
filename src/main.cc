@@ -10,7 +10,8 @@ int main (int argc, char *argv[])
 
 	MainWindow window;
 
-	// TODO: what meaning does the 2nd argument have??
+	// Only one signal handler is invoked. This signal handler must run before
+	// the default signal handler, or else it won't run at all.
 	app->signal_command_line().connect(sigc::bind(sigc::mem_fun(window, &MainWindow::on_cmdline), app), false);
 
 	return app->run(window);

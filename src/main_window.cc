@@ -19,9 +19,16 @@ MainWindow::MainWindow()
 	m_BallArea.set_size_request(1024, 768);
 	m_BallFrame.add(m_BallArea);
   
-	Glib::signal_timeout().connect(
-	  sigc::mem_fun(*this, &MainWindow::on_timer), simTimeoutMs);
-
+	Glib::signal_timeout().connect(sigc::mem_fun(*this, &MainWindow::on_timer), simTimeoutMs);
+	
+	// we override the default event signal handler
+	add_events(Gdk::KEY_PRESS_MASK);
+	
+	// Events in gtkmm4:
+	//auto controller = Gtk::EventControllerKey::create();
+	//controller->signal_key_pressed().connect(sigc::mem_fun(*this, &MainWindow::on_window_key_pressed), false);
+	//add_controller(controller);
+	  
 	show_all();
 }
 
@@ -31,6 +38,7 @@ MainWindow::~MainWindow()
 
 int MainWindow::on_cmdline(const Glib::RefPtr<Gio::ApplicationCommandLine>& cmdline, Glib::RefPtr<Gtk::Application> &app)
 {
+	// without activate() the window won't be shown.
 	app->activate();
 	
 	Glib::OptionContext ctx;
@@ -57,6 +65,16 @@ int MainWindow::on_cmdline(const Glib::RefPtr<Gio::ApplicationCommandLine>& cmdl
 	entry.set_description("corners are starting points");
 	group.add_entry(entry, m_sim.cornersMode);
 
+	entry = Glib::OptionEntry();
+	entry.set_long_name("slowstart");
+	entry.set_description("Move slowly at the beginning");
+	group.add_entry(entry, m_sim.slowStartMode);
+
+	entry = Glib::OptionEntry();
+	entry.set_long_name("showvelocityvectors");
+	entry.set_description("Show each ball's velocity vector");
+	group.add_entry(entry, m_sim.showVelocityVectors);
+
 	ctx.add_group(group);
 
 	// add GTK options, --help-gtk, etc
@@ -76,13 +94,20 @@ bool MainWindow::on_timer()
 {
 	//std::cout << "Timer event\n";
 	
-	number delta_t_remaining = SINGLE_TIME_STEP;
-    while (m_sim.move(&delta_t_remaining))
-    {
-		//std::cout << "in loop: delta_t_remaining=" << delta_t_remaining << std::endl;
-    }
-	
+	m_sim.innerLoop();
 	m_BallArea.queue_draw();
+
 	return true;
 }
 
+bool MainWindow::on_key_press_event(GdkEventKey* event)
+{
+	if (event->keyval == GDK_KEY_Escape ||
+	    event->keyval == 'q' || event->keyval == 'Q')
+	{
+		hide();
+		return true;
+	}
+	
+	return false;
+}

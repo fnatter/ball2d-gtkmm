@@ -6,7 +6,6 @@ BallDrawingArea::BallDrawingArea(const BallSimulation& sim)
 {
 	signal_draw().connect(
       sigc::mem_fun(*this, &BallDrawingArea::on_drawingarea_draw));
-
 }
 
 void BallDrawingArea::drawObstacles(const Cairo::RefPtr<Cairo::Context>& cr)
@@ -38,7 +37,8 @@ void BallDrawingArea::drawObstacles(const Cairo::RefPtr<Cairo::Context>& cr)
 	}
 }
 
-void BallDrawingArea::drawBalls(const Cairo::RefPtr<Cairo::Context>& cr)
+void BallDrawingArea::drawBalls(const Cairo::RefPtr<Cairo::Context>& cr,
+	bool showVelocityVectors)
 {
 	for (const Ball& ball: m_sim.balls)
 	{
@@ -48,10 +48,27 @@ void BallDrawingArea::drawBalls(const Cairo::RefPtr<Cairo::Context>& cr)
 	
 		cr->save();
 		cr->arc(ball.x, ball.y, ball.radius, 0.0, 2.0 * M_PI); // full circle
-		cr->set_source_rgba(0.0, 0.0, 0.8, 0.6);    // partially translucent
+		cr->set_source_rgba(ball.r, ball.g, ball.b, ball.a);
 		cr->fill_preserve();
-		cr->restore();  // back to opaque black
+		cr->restore();
 		cr->stroke();
+		
+		if (showVelocityVectors)
+		{
+			cr->save();
+			cr->set_line_width(1.0);
+			cr->set_source_rgba(0.95, 0.95, 0.95, 0.9);
+			cr->move_to(ball.x, ball.y);
+			Vector2D velocityVector;
+			velocityVector.x = ball.dx;
+			velocityVector.y = ball.dy;
+			Vector2D_multScalar(&velocityVector, ball.radius / MAX_VELOCITY);
+			velocityVector.x += ball.x;
+			velocityVector.y += ball.y;
+			cr->line_to(velocityVector.x, velocityVector.y);
+			cr->restore();
+			cr->stroke();
+		}
 	}
 }
 
@@ -74,7 +91,7 @@ bool BallDrawingArea::on_drawingarea_draw(const Cairo::RefPtr<Cairo::Context>& c
 	cr->translate(-MINX, -MINY);
                                       
 	drawObstacles(cr);
-	drawBalls(cr);
+	drawBalls(cr, m_sim.showVelocityVectors);
 
 	// return true because we've handled this event, so no
 	// further processing is required.

@@ -28,8 +28,11 @@ Ball::Ball(bool tinyMode, bool debianMode, bool cornersMode)
     }
 
     this->radius = ((MAX_RADIUS - MIN_RADIUS) * (this->mass - MIN_MASS) / MAX_MASS) + MIN_RADIUS;
-    /* TODO: cache mapped radius?
-       map_length(wld_radius, &radius); */
+    
+    this->r = new_number_random(0.0, 1.0);
+    this->g = new_number_random(0.0, 1.0);
+    this->b = new_number_random(0.0, 1.0);
+    this->a = 0.9;
 
     //if (st->startAngles == ANGLES_ALL)
     {

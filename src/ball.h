@@ -54,7 +54,7 @@ public:
     number dx,dy;
     number mass;
     number radius;
-    unsigned long color;
+    number r, g, b, a;
     double velocity;
 	Event lastEvent;
 };

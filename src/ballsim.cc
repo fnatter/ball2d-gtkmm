@@ -1,6 +1,7 @@
 #include "ballsim.h"
 
 #include <iostream>
+#include <ctime>
 
 BallSimulation::BallSimulation()
 {
@@ -9,6 +10,9 @@ BallSimulation::BallSimulation()
 	tinyMode = false;
 	debianMode = false;
 	cornersMode = false;
+	slowStartMode = false;
+	showVelocityVectors = true;
+	//delay = 20000;
 
 	// we cannot call init() here because the command line
 	// options are not parsed yet!
@@ -16,6 +20,12 @@ BallSimulation::BallSimulation()
 
 void BallSimulation::init()
 {
+	if (debianMode || cornersMode)
+	{
+		slowStartMode = true;
+	}
+	startTime = time(nullptr);
+	
 	max_radius = -100.0;
 	for (size_t i = 0; i < numberOfBalls; i++)
 	{
@@ -32,7 +42,14 @@ void BallSimulation::init()
 	//polyObstacles.resize(1);
 	//createStarPolygon(&polyObstacles[0], 24, 0, 0, 70, 10);
 	
-	initRandomPositions();
+	if (debianMode)
+	{
+		initDebianPositions();
+	}
+	else
+	{
+		initRandomPositions();
+	}
 }
 
 void BallSimulation::initObstacles()
@@ -47,8 +64,6 @@ void BallSimulation::initObstacles2()
 	int numCols = 5, numRows = 3;
 	double xSpacing = (MAXX-MINX)/(numCols+1);
 	double ySpacing = (MAXY-MINY)/(numRows+1);
-
-	startGrid = false;
 
 	for (int i = 1; i <= numRows; i++)
 	{
@@ -118,6 +133,55 @@ void BallSimulation::initRandomPositions()
 	} // for all balls
 }
 
+void BallSimulation::initDebianPositions()
+{
+	int ballCounter = 0;
+	number numberOfRounds = 2.5;
+	number angleIncrement = 15.0; // was: 20.0
+
+	for (number angle = -45.0, radius = 0.0; angle <= numberOfRounds * 360.0;
+		 angle += angleIncrement, radius += max_radius*0.8)
+	{
+		balls[ballCounter].x = cos(angle * M_PI/180.0) * radius;
+		balls[ballCounter].y = sin(angle * M_PI/180.0) * radius;
+		
+		bool skip = false;
+		for (int otherBallCounter = 0; otherBallCounter < ballCounter; otherBallCounter++)
+		{
+			if (Ball::collision_check(&balls[ballCounter], &balls[otherBallCounter]))
+			{
+				// skip this position, it would cause a collision
+				skip = true;
+				break;
+			}
+		}
+		if (skip)
+		{
+			continue;
+		}
+
+		// no more space left?
+		if (balls[ballCounter].x - balls[ballCounter].radius < MINX ||
+			balls[ballCounter].x + balls[ballCounter].radius > MAXX ||
+			balls[ballCounter].y - balls[ballCounter].radius < MINY ||
+			balls[ballCounter].y + balls[ballCounter].radius > MAXY)
+		{
+			//std::cout << "Stopping after ballCounter=" << ballCounter << "\n";
+			//break;
+		}
+		
+		ballCounter++;
+		// all balls placed?
+		if (ballCounter == numberOfBalls)
+			break;
+	}
+	std::cout << "Done with Debian: ballCounter=" << ballCounter << ", balls.size()=" << balls.size() << "\n";
+	while (balls.size() > ballCounter)
+	{
+		balls.pop_back();
+	}
+}
+
 bool BallSimulation::collision_with_other(Ball* b)
 {
     for (size_t i = 0; i < balls.size(); i++)
@@ -129,6 +193,40 @@ bool BallSimulation::collision_with_other(Ball* b)
             return true;
     }
     return false;
+}
+
+void BallSimulation::innerLoop()
+{
+	number delta_t_remaining = SINGLE_TIME_STEP;
+    time_t timeDelta = time(nullptr) - startTime;
+	
+	if (slowStartMode && timeDelta <= 15)
+	{
+		delta_t_remaining *= 0.05;
+	}
+	
+    long startMoveMicroseconds = time_microseconds(), endMoveMicroseconds, ballsMoveMicroseconds; 
+    while (move(&delta_t_remaining))
+    {
+		//std::cout << "in loop: delta_t_remaining=" << delta_t_remaining << std::endl;
+    }
+    endMoveMicroseconds = time_microseconds();
+    ballsMoveMicroseconds = endMoveMicroseconds - startMoveMicroseconds;
+    
+    /*
+    long thisDelay;
+	if (slowStartMode && timeDelta <= 15)
+		thisDelay = (delay - ballsMoveMicroseconds) * 2;
+	else
+		thisDelay = (delay - ballsMoveMicroseconds);
+	if (thisDelay < 0)
+		thisDelay = 0;
+	usleep(delay);
+	if (slowStartMode && timeDelta <= 1500)
+	{
+		usleep(2000);
+	}
+	*/
 }
 
 bool BallSimulation::move(number* delta_t)
