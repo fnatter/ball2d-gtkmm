@@ -34,7 +34,8 @@ public:
 
     long iteration_number;
     std::time_t startTime;
-    std::time_t lastZombieTime;
+    //std::time_t lastZombieTime;
+    number max_radius;
 
     std::vector<Ball> balls;
     std::vector<Obstacle> obstacles;
@@ -46,18 +47,18 @@ public:
     bool cornersMode;
     bool slowStartMode;
     bool showVelocityVectors;
-      
-    bool dbuf;
-    int ncolors;
-    int* startAngles;
-    int numStartAngles;
-
-    bool startGrid;
-    bool zombies;
-    number max_radius;
     bool showFutureCollisions;
-    Event nextEvent;
 
+    int speed; // [0;10]
+
+    // TODO: implement angles
+    //int* startAngles;
+    //int numStartAngles;
+    // TODO: implement startGrid
+//  bool startGrid;
+    // TODO: implement zombies mode
+//    bool zombies;
+    Event nextEvent;
 };
 
 #endif /* SRC_BALLSIM_H */

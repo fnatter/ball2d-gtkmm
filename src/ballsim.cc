@@ -5,14 +5,19 @@
 
 BallSimulation::BallSimulation()
 {
+	startTime = time(nullptr);
+
 	// set some defaults
+	iteration_number = 0;
 	numberOfBalls = 100;
 	tinyMode = false;
 	debianMode = false;
 	cornersMode = false;
 	slowStartMode = false;
 	showVelocityVectors = true;
-	//delay = 20000;
+	showFutureCollisions = true;
+	speed = 8;
+	max_radius = -100.0;
 
 	// we cannot call init() here because the command line
 	// options are not parsed yet!
@@ -35,9 +40,7 @@ void BallSimulation::init()
 	{
 		slowStartMode = true;
 	}
-	startTime = time(nullptr);
-	
-	max_radius = -100.0;
+
 	for (size_t i = 0; i < numberOfBalls; i++)
 	{
 		balls.emplace_back(tinyMode, debianMode, cornersMode);
@@ -301,7 +304,10 @@ void BallSimulation::innerLoop()
 {
 	number delta_t_remaining = SINGLE_TIME_STEP;
     time_t timeDelta = time(nullptr) - startTime;
-	
+
+    // speed is [0;10]
+    delta_t_remaining *= speed/10.0;
+
 	if (slowStartMode && timeDelta <= 15)
 	{
 		delta_t_remaining *= 0.05;
@@ -311,6 +317,8 @@ void BallSimulation::innerLoop()
     {
 		//std::cout << "in loop: delta_t_remaining=" << delta_t_remaining << std::endl;
     }
+
+	iteration_number++;
 }
 
 bool BallSimulation::move(number* delta_t)
@@ -326,12 +334,12 @@ bool BallSimulation::move(number* delta_t)
 	std::cout << "\n\nBalls_move(" << *delta_t << ")" << std::endl;
 #endif
 
-    balls = balls;
     nBalls = balls.size();
 
     currentTime = time(NULL);
     timeDelta = currentTime - startTime;
 
+    /*
     if (zombies && lastZombieTime != currentTime &&
         timeDelta > 0 && timeDelta % 10 == 0)
     {
@@ -349,16 +357,17 @@ bool BallSimulation::move(number* delta_t)
         }
         lastZombieTime = currentTime; 
         
-        /* make sure that events are re-calculated */
+        // make sure that events are re-calculated
         nextEvent.delta_t = INFINITY;
         nextEvent.type = EventType::NONE;
 
-        /* make sure that all collisions are possible again */
+        // make sure that all collisions are possible again
         for (i = 0; i < nBalls; i++)
         {
             balls[i].lastEvent.type = EventType::NONE;
         }
     }
+	*/
 
     if (nextEvent.delta_t < *delta_t)
     {

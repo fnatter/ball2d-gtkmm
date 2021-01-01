@@ -75,6 +75,12 @@ int MainWindow::on_cmdline(const Glib::RefPtr<Gio::ApplicationCommandLine>& cmdl
 	entry.set_description("Show each ball's velocity vector");
 	group.add_entry(entry, m_sim.showVelocityVectors);
 
+	entry = Glib::OptionEntry();
+	entry.set_long_name("speed");
+	entry.set_short_name('s');
+	entry.set_description("speed ([0;10])");
+	group.add_entry(entry, m_sim.speed);
+
 	ctx.add_group(group);
 
 	// add GTK options, --help-gtk, etc
@@ -93,7 +99,7 @@ int MainWindow::on_cmdline(const Glib::RefPtr<Gio::ApplicationCommandLine>& cmdl
 bool MainWindow::on_timer()
 {
 	//std::cout << "Timer event\n";
-	
+
 	m_sim.innerLoop();
 	m_BallArea.queue_draw();
 
@@ -106,6 +112,18 @@ bool MainWindow::on_key_press_event(GdkEventKey* event)
 	    event->keyval == 'q' || event->keyval == 'Q')
 	{
 		hide();
+		return true;
+	}
+
+	if (event->keyval == GDK_KEY_plus || event->keyval == GDK_KEY_KP_Add)
+	{
+		m_sim.speed = std::min(m_sim.speed + 1, 10);
+		return true;
+	}
+
+	if (event->keyval == GDK_KEY_minus || event->keyval == GDK_KEY_KP_Subtract)
+	{
+		m_sim.speed = std::max(m_sim.speed - 1, 0);
 		return true;
 	}
 	

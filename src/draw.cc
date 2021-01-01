@@ -93,6 +93,45 @@ bool BallDrawingArea::on_drawingarea_draw(const Cairo::RefPtr<Cairo::Context>& c
 	drawObstacles(cr);
 	drawBalls(cr, m_sim.showVelocityVectors);
 
+	if (m_sim.showFutureCollisions && m_sim.nextEvent.type == EventType::BALL_COLLISION)
+	{
+		Ball* b1 = m_sim.nextEvent.ball;
+		Ball* b2 = m_sim.nextEvent.ball2;
+		Vector2D coll, coll2, line_of_sight_at_coll;
+        // get the center of b1 at collision time
+        coll.x = b1->x +
+            b1->dx * b1->velocity * m_sim.nextEvent.delta_t;
+        coll.y = b1->y +
+            b1->dy * b1->velocity * m_sim.nextEvent.delta_t;
+
+        // get the center of b2 at collision time
+        coll2.x = b2->x +
+            b2->dx * b2->velocity * m_sim.nextEvent.delta_t;
+        coll2.y = b2->y +
+            b2->dy * b2->velocity * m_sim.nextEvent.delta_t;
+
+        // get the point where the two balls will touch
+        line_of_sight_at_coll = Vector2D_sub(&coll2, &coll);
+        Vector2D_normalize(&line_of_sight_at_coll);
+        coll.x += line_of_sight_at_coll.x * b1->radius;
+        coll.y += line_of_sight_at_coll.y * b1->radius;
+
+        // draw a cross where the balls will meet:
+		cr->save();
+		cr->set_line_width(0.2);
+		cr->set_source_rgba(1.0, 1.0, 0.0, 0.9);
+
+		cr->move_to(coll.x - 3, coll.y + 3);
+		cr->line_to(coll.x + 3, coll.y - 3);
+		cr->stroke();
+
+		cr->move_to(coll.x - 3, coll.y - 3);
+		cr->line_to(coll.x + 3, coll.y + 3);
+		cr->stroke();
+
+		cr->restore();
+	}
+
 	// return true because we've handled this event, so no
 	// further processing is required.
 	return true;
