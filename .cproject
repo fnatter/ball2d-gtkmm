@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?fileVersion 4.0.0?><cproject>
+	<storageModule moduleId="org.eclipse.cdt.core.settings">
+		<cconfiguration id="org.eclipse.cdt.core.default.config.1">
+			<storageModule buildSystemId="org.eclipse.cdt.core.defaultConfigDataProvider" id="org.eclipse.cdt.core.default.config.1" moduleId="org.eclipse.cdt.core.settings" name="Configuration">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GNU_ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.language.mapping">
+				<project-mappings/>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+	</storageModule>
+	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+		<project id="ball2d-gtkmm.null.1" name="ball2d-gtkmm"/>
+	</storageModule>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile"/>
+		<profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
+			<buildOutputProvider>
+				<openAction enabled="true" filePath=""/>
+				<parser enabled="true"/>
+			</buildOutputProvider>
+			<scannerInfoProvider id="specsFile">
+				<runAction arguments="-E -P -v -dD ${plugin_state_location}/${specs_file}" command="/usr/bin/cc" useDefault="true"/>
+				<parser enabled="true"/>
+			</scannerInfoProvider>
+		</profile>
+		<profile id="org.eclipse.cdt.make.core.GCCStandardMakePerFileProfile">
+			<buildOutputProvider>
+				<openAction enabled="true" filePath=""/>
+				<parser enabled="true"/>
+			</buildOutputProvider>
+			<scannerInfoProvider id="makefileGenerator">
+				<runAction arguments="-f ${project_name}_scd.mk" command="/usr/bin/make" useDefault="true"/>
+				<parser enabled="true"/>
+			</scannerInfoProvider>
+		</profile>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.pathentry">
+		<pathentry excluding="**/CMakeFiles/" kind="out" path=""/>
+		<pathentry include="/usr/include/gtkmm-3.0" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/lib/x86_64-linux-gnu/gtkmm-3.0/include" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/atkmm-1.6" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/gtk-3.0/unix-print" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/gdkmm-3.0" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/lib/x86_64-linux-gnu/gdkmm-3.0/include" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/giomm-2.4" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/lib/x86_64-linux-gnu/giomm-2.4/include" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/pangomm-1.4" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/lib/x86_64-linux-gnu/pangomm-1.4/include" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/glibmm-2.4" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/lib/x86_64-linux-gnu/glibmm-2.4/include" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/gtk-3.0" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/at-spi2-atk/2.0" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/at-spi-2.0" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/dbus-1.0" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/lib/x86_64-linux-gnu/dbus-1.0/include" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/gio-unix-2.0" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/cairo" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/libdrm" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/pango-1.0" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/harfbuzz" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/fribidi" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/atk-1.0" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/cairomm-1.0" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/lib/x86_64-linux-gnu/cairomm-1.0/include" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/pixman-1" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/freetype2" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/libpng16" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/sigc++-2.0" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/lib/x86_64-linux-gnu/sigc++-2.0/include" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/gdk-pixbuf-2.0" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/libmount" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/blkid" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/uuid" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/include/glib-2.0" kind="inc" path="" system="true"/>
+		<pathentry include="/usr/lib/x86_64-linux-gnu/glib-2.0/include" kind="inc" path="" system="true"/>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
+		<buildTargets>
+			<target name="[exe] ball2d" path="src" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+				<buildCommand>/usr/bin/make</buildCommand>
+				<buildTarget>ball2d</buildTarget>
+				<stopOnError>true</stopOnError>
+				<useDefaultCommand>false</useDefaultCommand>
+				<runAllBuilders>true</runAllBuilders>
+			</target>
+			<target name="[exe] ball2d/fast" path="src" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+				<buildCommand>/usr/bin/make</buildCommand>
+				<buildTarget>ball2d/fast</buildTarget>
+				<stopOnError>true</stopOnError>
+				<useDefaultCommand>false</useDefaultCommand>
+				<runAllBuilders>true</runAllBuilders>
+			</target>
+			<target name=": all" path="src" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+				<buildCommand>/usr/bin/make</buildCommand>
+				<buildTarget>all</buildTarget>
+				<stopOnError>true</stopOnError>
+				<useDefaultCommand>false</useDefaultCommand>
+				<runAllBuilders>true</runAllBuilders>
+			</target>
+			<target name=": clean" path="src" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+				<buildCommand>/usr/bin/make</buildCommand>
+				<buildTarget>clean</buildTarget>
+				<stopOnError>true</stopOnError>
+				<useDefaultCommand>false</useDefaultCommand>
+				<runAllBuilders>true</runAllBuilders>
+			</target>
+			<target name="Build" path="[Targets]/[exe] ball2d" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+				<buildCommand>/usr/bin/make</buildCommand>
+				<buildArguments>-C "/home/felix/git2/ball2d-gtkmm/build" </buildArguments>
+				<buildTarget>ball2d</buildTarget>
+				<stopOnError>true</stopOnError>
+				<useDefaultCommand>false</useDefaultCommand>
+				<runAllBuilders>true</runAllBuilders>
+			</target>
+			<target name="Clean" path="[Targets]/[exe] ball2d" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+				<buildCommand>/usr/bin/cmake</buildCommand>
+				<buildArguments>-E chdir "/home/felix/git2/ball2d-gtkmm/build/src" "/usr/bin/cmake" -P "CMakeFiles/ball2d.dir/cmake_clean.cmake"</buildArguments>
+				<stopOnError>true</stopOnError>
+				<useDefaultCommand>false</useDefaultCommand>
+				<runAllBuilders>true</runAllBuilders>
+			</target>
+			<target name=": rebuild_cache" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+				<buildCommand>/usr/bin/make</buildCommand>
+				<buildTarget>rebuild_cache</buildTarget>
+				<stopOnError>true</stopOnError>
+				<useDefaultCommand>false</useDefaultCommand>
+				<runAllBuilders>true</runAllBuilders>
+			</target>
+			<target name=": edit_cache" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+				<buildCommand>/usr/bin/make</buildCommand>
+				<buildTarget>edit_cache</buildTarget>
+				<stopOnError>true</stopOnError>
+				<useDefaultCommand>false</useDefaultCommand>
+				<runAllBuilders>true</runAllBuilders>
+			</target>
+			<target name=": all" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+				<buildCommand>/usr/bin/make</buildCommand>
+				<buildArguments>-C /home/felix/git2/ball2d-gtkmm/build</buildArguments>
+				<buildTarget>all</buildTarget>
+				<stopOnError>true</stopOnError>
+				<useDefaultCommand>false</useDefaultCommand>
+				<runAllBuilders>true</runAllBuilders>
+			</target>
+			<target name=": clean" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+				<buildCommand>/usr/bin/make</buildCommand>
+				<buildArguments>-C /home/felix/git2/ball2d-gtkmm/build</buildArguments>
+				<buildTarget>clean</buildTarget>
+				<stopOnError>true</stopOnError>
+				<useDefaultCommand>false</useDefaultCommand>
+				<runAllBuilders>true</runAllBuilders>
+			</target>
+		</buildTargets>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+</cproject>
