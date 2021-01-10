@@ -13,9 +13,10 @@ public:
 	
 	void init();
 
+	void initDebianPositions();
 	void initCornerPositions();
 	void initRandomPositions();
-	void initDebianPositions();
+	void initGridPositions();
 	
 	void initObstacles();
 	void initObstacles2();
@@ -46,6 +47,7 @@ public:
     bool debianMode;
     bool cornersMode;
     bool slowStartMode;
+    bool startGridMode;
     bool showVelocityVectors;
     bool showFutureCollisions;
 
@@ -53,11 +55,6 @@ public:
     Glib::ustring startAnglesOpt;
     std::vector<int> startAngles;
 
-    // TODO: implement angles
-    //int* startAngles;
-    //int numStartAngles;
-    // TODO: implement startGrid
-//  bool startGrid;
     // TODO: implement zombies mode
 //    bool zombies;
     Event nextEvent;

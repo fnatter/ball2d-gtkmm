@@ -87,6 +87,11 @@ int MainWindow::on_cmdline(const Glib::RefPtr<Gio::ApplicationCommandLine>& cmdl
 	entry.set_description("<angle>[,angle]*");
 	group.add_entry(entry, m_sim.startAnglesOpt);
 
+	entry = Glib::OptionEntry();
+	entry.set_long_name("grid");
+	entry.set_description("arrange balls in a grid");
+	group.add_entry(entry, m_sim.startGridMode);
+
 	ctx.add_group(group);
 
 	// add GTK options, --help-gtk, etc

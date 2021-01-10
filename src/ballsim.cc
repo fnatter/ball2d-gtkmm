@@ -82,6 +82,10 @@ void BallSimulation::init()
 	{
 		initCornerPositions();
 	}
+	else if (startGridMode)
+	{
+		initGridPositions();
+	}
 	else
 	{
 		initRandomPositions();
@@ -204,6 +208,47 @@ void BallSimulation::initCornerPositions()
         // collision - stop placing balls!
         resizeBalls(ballCounter);
         return;
+    }
+}
+
+void BallSimulation::initGridPositions()
+{
+    number gridWidth = max_radius*2 + 5.0;
+    number gridHeight = max_radius*2 + 5.0;
+
+    number x = MINX + max_radius + 5;
+    number y = MINY + max_radius + 5;
+    for (int i = 0; i < balls.size(); ++i)
+    {
+        balls[i].x = x;
+        balls[i].y = y;
+
+        bool conflict = false;
+        for (int j = 0; j < obstacles.size(); j++)
+        {
+        	ObstacleCollisionType obsCollType;
+            if (balls[i].obstacle_collision_check(&obstacles[j], &obsCollType))
+                conflict = true;
+        }
+        for (int j = 0; j < polyObstacles.size(); j++)
+        {
+        	if (balls[i].polygonalObstacle_collision_check(&polyObstacles[j]))
+                conflict = true;
+        }
+        if (!conflict)
+            i++;
+
+        x += gridWidth;
+        if (x >= MAXX - max_radius)
+        {
+            x = MINX + max_radius + 5;
+            y += gridHeight;
+            if (y + gridHeight > MAXY)
+            { // no space left: ignore the st->count - i remaining balls
+                resizeBalls(i);
+                break;
+            }
+        }
     }
 }
 
