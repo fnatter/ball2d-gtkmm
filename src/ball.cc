@@ -5,21 +5,21 @@
 
 using namespace std;
 
-Ball::Ball(bool tinyMode, bool debianMode, bool cornersMode)
+Ball::Ball(bool tinyMode, bool debianMode, bool cornersMode, std::vector<int> startAngles)
 { 
     int angle;
     
-    if (tinyMode) /* tiny mode: 95% small balls */
+    if (tinyMode) // tiny mode: 95% small balls
     {
         int tinyProb = new_number_random_int(1, 100);
         if (tinyProb < 95)
             this->mass = new_number_random(MIN_MASS, MIN_MASS + 0.1 * (MAX_MASS-MIN_MASS));
-        else /* insert a few large balls */
+        else // insert a few large balls
             this->mass = new_number_random(MIN_MASS + 0.9*(MAX_MASS-MIN_MASS), MAX_MASS);
     }
     else if (debianMode)
     {
-        /* insert only small balls in "debian mode" */
+        // insert only small balls in "debian mode"
         this->mass = new_number_random(MIN_MASS, MIN_MASS + 0.1 * (MAX_MASS-MIN_MASS));
     }
     else
@@ -34,24 +34,19 @@ Ball::Ball(bool tinyMode, bool debianMode, bool cornersMode)
     this->b = new_number_random(0.0, 1.0);
     this->a = 0.9;
 
-    //if (st->startAngles == ANGLES_ALL)
+    if (startAngles.empty()) // alll angles with the same probability
     {
         double angle = new_number_random(0.0, 360.0)*M_PI/180.0;
         this->dx = cos(angle);
         this->dy = sin(angle);
     }
-    /*
     else
     {
-        int whichAngle;
-
-        whichAngle = new_number_random_int(0, st->numStartAngles - 1);
-        // printf("whichAngle=%d\n", whichAngle);
-        angle = st->startAngles[whichAngle]; 
+        int whichAngle = new_number_random_int(0, startAngles.size() - 1);
+        angle = startAngles[whichAngle];
         this->dx = cos(M_PI/180.0 * angle);
         this->dy = sin(M_PI/180.0 * angle);
     }
-    */
 
     this->velocity = new_number_random(MIN_VELOCITY, MAX_VELOCITY);
     if (debianMode || cornersMode)
@@ -63,6 +58,9 @@ Ball::Ball(bool tinyMode, bool debianMode, bool cornersMode)
     this->lastEvent.obstacle = nullptr;
     this->lastEvent.ball = nullptr;
     this->lastEvent.ball2 = nullptr;
+
+    this->x = -numeric_limits<number>::max();
+    this->y = -numeric_limits<number>::max();
 }
 
 void Ball::randomizePosition()

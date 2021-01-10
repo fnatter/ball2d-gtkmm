@@ -18,6 +18,7 @@ BallSimulation::BallSimulation()
 	showFutureCollisions = true;
 	speed = 8;
 	max_radius = -100.0;
+	startAnglesOpt = "all";
 
 	// we cannot call init() here because the command line
 	// options are not parsed yet!
@@ -41,9 +42,26 @@ void BallSimulation::init()
 		slowStartMode = true;
 	}
 
+	if (startAnglesOpt == "all")
+	{
+		startAngles = { };
+	}
+	else if (startAnglesOpt == "right")
+	{
+		startAngles = { 0, 90, 180, 270 };
+	}
+	else // startAnglesOpt is a comma-separated list of angles
+	{
+		std::istringstream iss(startAnglesOpt);
+		std::string item;
+		while (getline (iss, item, ',')) {
+			startAngles.push_back(atoi(item.c_str()));
+		}
+	}
+
 	for (size_t i = 0; i < numberOfBalls; i++)
 	{
-		balls.emplace_back(tinyMode, debianMode, cornersMode);
+		balls.emplace_back(tinyMode, debianMode, cornersMode, startAngles);
 
 		if (balls[i].radius > max_radius)
             max_radius = balls[i].radius;

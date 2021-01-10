@@ -81,6 +81,12 @@ int MainWindow::on_cmdline(const Glib::RefPtr<Gio::ApplicationCommandLine>& cmdl
 	entry.set_description("speed ([0;10])");
 	group.add_entry(entry, m_sim.speed);
 
+	entry = Glib::OptionEntry();
+	entry.set_long_name("angles");
+	entry.set_short_name('a');
+	entry.set_description("<angle>[,angle]*");
+	group.add_entry(entry, m_sim.startAnglesOpt);
+
 	ctx.add_group(group);
 
 	// add GTK options, --help-gtk, etc

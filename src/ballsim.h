@@ -50,6 +50,8 @@ public:
     bool showFutureCollisions;
 
     int speed; // [0;10]
+    Glib::ustring startAnglesOpt;
+    std::vector<int> startAngles;
 
     // TODO: implement angles
     //int* startAngles;
