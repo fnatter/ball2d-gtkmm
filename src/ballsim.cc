@@ -16,6 +16,7 @@ BallSimulation::BallSimulation()
 	slowStartMode = false;
 	showVelocityVectors = true;
 	showFutureCollisions = true;
+	startGridMode = false;
 	speed = 8;
 	max_radius = -100.0;
 	startAnglesOpt = "all";
@@ -381,7 +382,38 @@ void BallSimulation::innerLoop()
 		//std::cout << "in loop: delta_t_remaining=" << delta_t_remaining << std::endl;
     }
 
+	if (showFutureCollisions && nextEvent.type == EventType::BALL_COLLISION)
+	{
+		futureCollisions.push_back(FutureCollision(nextEvent));
+	}
+
+	removeFadedOutFutureCollisionMarkers();
+
 	iteration_number++;
+}
+
+void BallSimulation::removeFadedOutFutureCollisionMarkers()
+{
+	auto futureCollisionElapsed = [](const FutureCollision& futureCollision) {
+		long elapsedTime = time_microseconds()/1000 - futureCollision.startTimeMs;
+		return elapsedTime > FutureCollision::durationMs;
+	};
+	auto firstMatch = std::find_if(futureCollisions.begin(), futureCollisions.end(),
+			futureCollisionElapsed);
+	if (firstMatch != futureCollisions.end())
+	{
+		for(auto iter = futureCollisions.begin(); iter != futureCollisions.end(); )
+		{
+			if (futureCollisionElapsed(*iter))
+			{
+				iter = futureCollisions.erase(iter);
+			}
+			else
+			{
+				++iter;
+			}
+		}
+	}
 }
 
 bool BallSimulation::move(number* delta_t)

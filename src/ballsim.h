@@ -6,6 +6,23 @@
 
 #include <ctime>
 
+struct FutureCollision : public Event
+{
+	static constexpr int durationMs = 1000;
+	static constexpr double r = 0.0;
+	static constexpr double g = 0.0;
+	static constexpr double b = 1.0;
+
+	long startTimeMs;
+
+	FutureCollision(Event evt)
+		: Event(evt), startTimeMs(time_microseconds() / 1000)
+	{
+
+	}
+
+};
+
 struct BallSimulation
 {
 public:
@@ -22,6 +39,8 @@ public:
 	void initObstacles2();
 	
 	void innerLoop();
+
+	void removeFadedOutFutureCollisionMarkers();
 
 	bool move(number* delta_t);
 	bool collision_with_other(Ball* b);
@@ -58,6 +77,8 @@ public:
     // TODO: implement zombies mode
 //    bool zombies;
     Event nextEvent;
+
+    std::vector<FutureCollision> futureCollisions;
 };
 
 #endif /* SRC_BALLSIM_H */
